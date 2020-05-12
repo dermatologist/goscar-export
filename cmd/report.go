@@ -1,12 +1,14 @@
 package main
 
 import (
+	"github.com/E-Health/goscar-export/internal/oscutil"
 	"flag"
 	"fmt"
-	"github.com/jroimartin/gocui"
 	"github.com/E-Health/goscar"
+	"github.com/jroimartin/gocui"
 	"log"
 	"os"
+	"time"
 )
 
 //This is how you declare a global variable
@@ -50,7 +52,7 @@ oscar_helper -sshhost=xxx -sshport=22 -sshuser=xxx -sshpass=xxx -dbuser=xxx -dbp
 		csvMap = goscar.CSVToMap(r)
 
 	} else if *sshHost != "" {
-		r, err := mysqlConnect()
+		r, err := oscutil.MysqlConnect()
 		if err != nil {
 			log.Panicln(err)
 		}
@@ -69,15 +71,53 @@ oscar_helper -sshhost=xxx -sshport=22 -sshuser=xxx -sshpass=xxx -dbuser=xxx -dbp
 
 	g.Cursor = true
 
-	g.SetManagerFunc(layout)
+	g.SetManagerFunc(oscutil.Layout)
 
-	goscar.FindDuplicates(csvMap)
+	findDuplicates(csvMap)
 
-	if err := keybindings(g); err != nil {
+	if err := oscutil.Keybindings(g); err != nil {
 		log.Panicln(err)
 	}
 
 	if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
 		log.Panicln(err)
+	}
+
+}
+
+// TODO change to the one from goscar
+func findDuplicates(csvMap []map[string]string) {
+	var latest bool
+	var included bool
+	var demographicNo []string
+	for _, v := range csvMap {
+		latest = false
+		included = true
+		for k2, v2 := range v {
+			if k2 == "eft_latest" && v2 == "1" {
+				latest = true
+			}
+			if k2 == "dateCreated" {
+				dateCreated, _ := time.Parse("2006-01-02", v2)
+				_dateFrom, _ := time.Parse("2006-01-02", *dateFrom)
+				_dateTo, _ := time.Parse("2006-01-02", *dateTo)
+				if len(*dateFrom) > 0 && len(*dateTo) > 0 && !goscar.InTimeSpan(_dateFrom, _dateTo, dateCreated) {
+					included = false
+				}
+			}
+			if k2 == "demographic_no" {
+				if !goscar.IsMember(v2, demographicNo){
+					demographicNo = append(demographicNo, v2)
+					latest = true
+				}
+			}
+			if *includeAll {
+				latest = true
+			}
+		}
+		if latest && !included {
+			csvMapValid = append(csvMapValid, v)
+			recordCount++
+		}
 	}
 }

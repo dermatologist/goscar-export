@@ -1,9 +1,14 @@
-package interface
+package oscutil
 
 import (
 	"fmt"
+	"strconv"
+	"log"
+	"github.com/E-Health/goscar"
 	"github.com/jroimartin/gocui"
+	"github.com/montanaflynn/stats"
 )
+
 
 func nextView(g *gocui.Gui, v *gocui.View) error {
 	if v == nil || v.Name() == "side" {
@@ -59,7 +64,7 @@ func quit(g *gocui.Gui, v *gocui.View) error {
 	return gocui.ErrQuit
 }
 
-func layout(g *gocui.Gui) error {
+func Layout(g *gocui.Gui) error {
 	maxX, maxY := g.Size()
 	if v, err := g.SetView("title", -1, -1, maxX, 3); err != nil {
 		if err != gocui.ErrUnknownView {
@@ -93,7 +98,7 @@ func layout(g *gocui.Gui) error {
 	return nil
 }
 
-func keybindings(g *gocui.Gui) error {
+func Keybindings(g *gocui.Gui) error {
 	if err := g.SetKeybinding("side", gocui.KeyCtrlSpace, gocui.ModNone, nextView); err != nil {
 		return err
 	}
@@ -113,4 +118,69 @@ func keybindings(g *gocui.Gui) error {
 		return err
 	}
 	return nil
+}
+
+func mainOutput(g *gocui.Gui, message *string) {
+	if v, err := g.SetCurrentView("main"); err != nil {
+		log.Panicln(err)
+	} else {
+		v.Editable = true
+		v.Wrap = true
+		v.Clear()
+		fmt.Fprintln(v, *message)
+		fmt.Fprintln(v, " ")
+		varType := "string"
+		counter := make(map[string]int)
+		varNum := []float64{}
+		for _, record := range csvMapValid {
+			if n, err := strconv.ParseFloat(record[*message], 64); err == nil {
+				varNum = append(varNum, n)
+				varType = "num"
+			} else {
+				counter[record[*message]]++
+
+			}
+			// https://stackoverflow.com/questions/44417913/go-count-distinct-values-in-array-performance-tips
+		}
+		distinctStrings := make([]string, len(counter))
+		i := 0
+		for k := range counter {
+			distinctStrings[i] = k
+			i++
+		}
+		for _, s := range distinctStrings {
+			fmt.Fprintln(v, s, " --> ", counter[s], " | ", counter[s]*100/recordCount, "%")
+		}
+		if varType == "num" {
+			a, _ := stats.Sum(varNum)
+			fmt.Fprintln(v, "Sum -->", a)
+			a, _ = stats.Min(varNum)
+			fmt.Fprintln(v, "Min -->", a)
+			a, _ = stats.Max(varNum)
+			fmt.Fprintln(v, "Max -->", a)
+			a, _ = stats.Mean(varNum)
+			fmt.Fprintln(v, "Mean -->", a)
+			a, _ = stats.Median(varNum)
+			fmt.Fprintln(v, "Median -->", a)
+			a, _ = stats.StandardDeviation(varNum)
+			fmt.Fprintln(v, "StdDev -->", a)
+
+		}
+		g.SetCurrentView("side")
+		recover()
+	}
+}
+
+func sideOutput(g *gocui.Gui) {
+	toIgnore := []string{"id", "fdid", "dateCreated", "eform_link", "StaffSig", "SubmitButton", "efmfid"}
+	if v, err := g.SetCurrentView("side"); err != nil {
+		log.Panicln(err)
+	} else {
+		firstRecord := csvMap[0]
+		for key, _ := range firstRecord {
+			if !goscar.IsMember(key, toIgnore) {
+				fmt.Fprintln(v, key)
+			}
+		}
+	}
 }

@@ -1,0 +1,4 @@
+{
+    "go.autocompleteUnimportedPackages": true,
+    "editor.formatOnSave": true
+}

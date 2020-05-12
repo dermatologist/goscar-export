@@ -1,4 +1,4 @@
-package interface
+package oscutil
 
 import (
 	"database/sql"
@@ -10,6 +10,12 @@ import (
 	"os"
 	"strconv"
 )
+//This is how you declare a global variable
+var csvMap, csvMapValid []map[string]string
+var recordCount int
+var sshHost, sshUser, sshPass, dbUser, dbPass, dbHost, dbName, dateFrom, dateTo, filePtr *string
+var sshPort, fid *int
+var includeAll *bool
 
 type ViaSSHDialer struct {
 	client *ssh.Client
@@ -19,7 +25,7 @@ func (self *ViaSSHDialer) Dial(addr string) (net.Conn, error) {
 	return self.client.Dial("tcp", addr)
 }
 
-func mysqlConnect() (*sql.Rows, error) {
+func MysqlConnect() (*sql.Rows, error) {
 	var agentClient agent.Agent
 	// Establish a connection to the local ssh-agent
 	if conn, err := net.Dial("unix", os.Getenv("SSH_AUTH_SOCK")); err == nil {
