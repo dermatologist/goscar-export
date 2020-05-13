@@ -7,6 +7,7 @@ import (
 	"github.com/jroimartin/gocui"
 )
 
+// Recordcount Number of records in the csv
 var RecordCount int
 var CsvMap, CsvMapValid []map[string]string
 
