@@ -2,11 +2,9 @@ package oscutil
 
 import (
 	"fmt"
-	"strconv"
 	"log"
 	"github.com/E-Health/goscar"
 	"github.com/jroimartin/gocui"
-	"github.com/montanaflynn/stats"
 )
 
 var RecordCount int
@@ -130,43 +128,26 @@ func mainOutput(g *gocui.Gui, message *string) {
 		v.Wrap = true
 		v.Clear()
 		fmt.Fprintln(v, *message)
-		fmt.Fprintln(v, " ")
-		varType := "string"
-		counter := make(map[string]int)
-		varNum := []float64{}
-		for _, record := range CsvMapValid {
-			if n, err := strconv.ParseFloat(record[*message], 64); err == nil {
-				varNum = append(varNum, n)
-				varType = "num"
-			} else {
-				counter[record[*message]]++
+		fmt.Fprintln(v, "---------------------")
 
+		toPrint := goscar.GetStats(*message, RecordCount, CsvMapValid)
+
+		if toPrint["num"] > 0 {
+			for k, val := range toPrint {
+				if k != "num" {
+					fmt.Fprintln(v, k , " : ", val)
+				}
 			}
-			// https://stackoverflow.com/questions/44417913/go-count-distinct-values-in-array-performance-tips
-		}
-		distinctStrings := make([]string, len(counter))
-		i := 0
-		for k := range counter {
-			distinctStrings[i] = k
-			i++
-		}
-		for _, s := range distinctStrings {
-			fmt.Fprintln(v, s, " --> ", counter[s], " | ", counter[s]*100/RecordCount, "%")
-		}
-		if varType == "num" {
-			a, _ := stats.Sum(varNum)
-			fmt.Fprintln(v, "Sum -->", a)
-			a, _ = stats.Min(varNum)
-			fmt.Fprintln(v, "Min -->", a)
-			a, _ = stats.Max(varNum)
-			fmt.Fprintln(v, "Max -->", a)
-			a, _ = stats.Mean(varNum)
-			fmt.Fprintln(v, "Mean -->", a)
-			a, _ = stats.Median(varNum)
-			fmt.Fprintln(v, "Median -->", a)
-			a, _ = stats.StandardDeviation(varNum)
-			fmt.Fprintln(v, "StdDev -->", a)
-
+		} else {
+			total := 0.0
+			for _, val := range toPrint {
+				total = total + val
+			}
+			for k, val := range toPrint {
+				if k != "num"{
+					fmt.Fprintln(v, k , " : ", val, "(", (val*100/total), " % )")
+				}
+			}
 		}
 		g.SetCurrentView("side")
 		recover()
