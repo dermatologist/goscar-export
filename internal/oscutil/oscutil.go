@@ -9,6 +9,8 @@ import (
 	"github.com/montanaflynn/stats"
 )
 
+var RecordCount int
+var CsvMap, CsvMapValid []map[string]string
 
 func nextView(g *gocui.Gui, v *gocui.View) error {
 	if v == nil || v.Name() == "side" {
@@ -74,7 +76,7 @@ func Layout(g *gocui.Gui) error {
 		v.SelBgColor = gocui.ColorRed
 		v.SelFgColor = gocui.ColorBlack
 		fmt.Fprintln(v, "OSCAR eForm Export Tool Helper by Bell Eapen")
-		fmt.Fprintln(v, "Valid Records: ", recordCount)
+		fmt.Fprintln(v, "Valid Records: ", RecordCount)
 	}
 	if _, err := g.SetView("main", 30, 4, maxX, maxY); err != nil {
 		if err != gocui.ErrUnknownView {
@@ -132,7 +134,7 @@ func mainOutput(g *gocui.Gui, message *string) {
 		varType := "string"
 		counter := make(map[string]int)
 		varNum := []float64{}
-		for _, record := range csvMapValid {
+		for _, record := range CsvMapValid {
 			if n, err := strconv.ParseFloat(record[*message], 64); err == nil {
 				varNum = append(varNum, n)
 				varType = "num"
@@ -149,7 +151,7 @@ func mainOutput(g *gocui.Gui, message *string) {
 			i++
 		}
 		for _, s := range distinctStrings {
-			fmt.Fprintln(v, s, " --> ", counter[s], " | ", counter[s]*100/recordCount, "%")
+			fmt.Fprintln(v, s, " --> ", counter[s], " | ", counter[s]*100/RecordCount, "%")
 		}
 		if varType == "num" {
 			a, _ := stats.Sum(varNum)
@@ -176,7 +178,7 @@ func sideOutput(g *gocui.Gui) {
 	if v, err := g.SetCurrentView("side"); err != nil {
 		log.Panicln(err)
 	} else {
-		firstRecord := csvMap[0]
+		firstRecord := CsvMap[0]
 		for key, _ := range firstRecord {
 			if !goscar.IsMember(key, toIgnore) {
 				fmt.Fprintln(v, key)

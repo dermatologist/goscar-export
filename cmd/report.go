@@ -51,13 +51,6 @@ oscar_helper -sshhost=xxx -sshport=22 -sshuser=xxx -sshpass=xxx -dbuser=xxx -dbp
 		}
 		csvMap = goscar.CSVToMap(r)
 
-	} else if *sshHost != "" {
-		r, err := oscutil.MysqlConnect()
-		if err != nil {
-			log.Panicln(err)
-		}
-
-		csvMap = goscar.MysqlToMap(r)
 	} else {
 		fmt.Print(usage)
 		os.Exit(1)
@@ -71,9 +64,10 @@ oscar_helper -sshhost=xxx -sshport=22 -sshuser=xxx -sshpass=xxx -dbuser=xxx -dbp
 
 	g.Cursor = true
 
+	findDuplicates(csvMap)
+
 	g.SetManagerFunc(oscutil.Layout)
 
-	findDuplicates(csvMap)
 
 	if err := oscutil.Keybindings(g); err != nil {
 		log.Panicln(err)
@@ -120,4 +114,7 @@ func findDuplicates(csvMap []map[string]string) {
 			recordCount++
 		}
 	}
+	oscutil.RecordCount = recordCount
+	oscutil.CsvMap = csvMap
+	oscutil.CsvMapValid = csvMapValid
 }
