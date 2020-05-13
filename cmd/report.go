@@ -8,7 +8,6 @@ import (
 	"github.com/jroimartin/gocui"
 	"log"
 	"os"
-	"time"
 )
 
 //This is how you declare a global variable
@@ -20,8 +19,8 @@ var includeAll *bool
 
 func main() {
 	// Commandline flags
-	dateFrom = flag.String("datefrom", "oscar", "The start date")
-	dateTo = flag.String("dateto", "oscar", "The end date")
+	dateFrom = flag.String("datefrom", "2016-01-02", "The start date")
+	dateTo = flag.String("dateto", "2020-01-02", "The end date")
 	fid = flag.Int("fid", 1, "The eform ID")
 	filePtr = flag.String("file", "data.csv", "The csv file to process")
 	includeAll = flag.Bool("include", false, "Include all records")
@@ -57,7 +56,8 @@ oscar_helper -sshhost=xxx -sshport=22 -sshuser=xxx -sshpass=xxx -dbuser=xxx -dbp
 
 	g.Cursor = true
 
-	findDuplicates(csvMap)
+	oscutil.CsvMap = csvMap
+	oscutil.CsvMapValid, oscutil.RecordCount = goscar.FindDuplicates(csvMap, *dateFrom, *dateTo, *includeAll)
 
 	g.SetManagerFunc(oscutil.Layout)
 
@@ -72,42 +72,3 @@ oscar_helper -sshhost=xxx -sshport=22 -sshuser=xxx -sshpass=xxx -dbuser=xxx -dbp
 
 }
 
-// TODO change to the one from goscar
-func findDuplicates(csvMap []map[string]string) {
-	var latest bool
-	var included bool
-	var demographicNo []string
-	for _, v := range csvMap {
-		latest = false
-		included = true
-		for k2, v2 := range v {
-			if k2 == "eft_latest" && v2 == "1" {
-				latest = true
-			}
-			if k2 == "dateCreated" {
-				dateCreated, _ := time.Parse("2006-01-02", v2)
-				_dateFrom, _ := time.Parse("2006-01-02", *dateFrom)
-				_dateTo, _ := time.Parse("2006-01-02", *dateTo)
-				if len(*dateFrom) > 0 && len(*dateTo) > 0 && !goscar.InTimeSpan(_dateFrom, _dateTo, dateCreated) {
-					included = false
-				}
-			}
-			if k2 == "demographic_no" {
-				if !goscar.IsMember(v2, demographicNo){
-					demographicNo = append(demographicNo, v2)
-					latest = true
-				}
-			}
-			if *includeAll {
-				latest = true
-			}
-		}
-		if latest && !included {
-			csvMapValid = append(csvMapValid, v)
-			recordCount++
-		}
-	}
-	oscutil.RecordCount = recordCount
-	oscutil.CsvMap = csvMap
-	oscutil.CsvMapValid = csvMapValid
-}
