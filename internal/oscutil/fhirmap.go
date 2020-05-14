@@ -16,8 +16,8 @@ type FhirObservation struct {
 	ValueInteger *int    `json:"value-integer,omitempty"`
 }
 
-// maptofhir : maps the csvMap to a FHIR bundle.
-func maptofhir(csvMapValid []map[string]string) fhir.Bundle {
+// MapToFHIR : maps the csvMap to a FHIR bundle.
+func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 	var composition = fhir.Composition{}
 	var patient = fhir.Patient{}
 	var observation = FhirObservation{} // Extended observation: See above for definition
@@ -54,8 +54,8 @@ func maptofhir(csvMapValid []map[string]string) fhir.Bundle {
 	bundle.Entry = append(bundle.Entry, bundleEntry)
 
 	// Get headers from the first row
-	headers := CsvMap[0]
-	for _, record := range csvMapValid {
+	headers := _csvMapValid[0]
+	for _, record := range _csvMapValid {
 
 		// Each record has a patient (ID is unique for location)
 		patientId := location + record["demographicNo"]
@@ -69,7 +69,7 @@ func maptofhir(csvMapValid []map[string]string) fhir.Bundle {
 		// Each value is an observation
 		for header, value := range headers {
 			// Function call to get the type of header -> number or string
-			headerStat := goscar.GetStats(header, RecordCount, CsvMapValid)
+			headerStat := goscar.GetStats(header, RecordCount, _csvMapValid)
 			identifier.System = &mySystem
 			identifier.Value = &header
 			_identifier := []fhir.Identifier{}
