@@ -1,5 +1,7 @@
 github.com/E-Health/goscar v1.2.3 h1:quHOiRVNf69/t68cQY0Vlwg1kXfTk+ThMM4byTFZulE=
 github.com/E-Health/goscar v1.2.3/go.mod h1:V/81TzaNcK3+iUg8u7RsCfzcPRnZspkv5UciIM8CIOY=
+github.com/joho/godotenv v1.3.0 h1:Zjp+RcGpHhGlrMbJzXTrZZPrWj+1vfm90La1wgB6Bhc=
+github.com/joho/godotenv v1.3.0/go.mod h1:7hK45KPybAkOC6peb+G5yklZfMxEjkZhHbwpqxOKXbg=
 github.com/jroimartin/gocui v0.4.0 h1:52jnalstgmc25FmtGcWqa0tcbMEWS6RpFLsOIO+I+E8=
 github.com/jroimartin/gocui v0.4.0/go.mod h1:7i7bbj99OgFHzo7kB2zPb8pXLqMBSQegY7azfqXMkyY=
 github.com/mattn/go-runewidth v0.0.9 h1:Lm995f3rfxdpd6TSmuVCHVb/QhupuXlYr8sCI/QdE+0=
@@ -8,6 +10,5 @@ github.com/montanaflynn/stats v0.5.0 h1:2EkzeTSqBB4V4bJwWrt5gIIrZmpJBcoIRGS2kWLg
 github.com/montanaflynn/stats v0.5.0/go.mod h1:wL8QJuTMNUDYhXwkmfOly8iTdp5TEcJFWZD2D7SIkUc=
 github.com/nsf/termbox-go v0.0.0-20200418040025-38ba6e5628f1 h1:lh3PyZvY+B9nFliSGTn5uFuqQQJGuNrD0MLCokv09ag=
 github.com/nsf/termbox-go v0.0.0-20200418040025-38ba6e5628f1/go.mod h1:IuKpRQcYE1Tfu+oAQqaLisqDeXgjyyltCfsaoYN18NQ=
-github.com/samply/golang-fhir-models v0.1.0 h1:CsJxjvM2rtxsW3cd1oLOpZub3lkcC8urDaOmsDLmI9s=
 github.com/samply/golang-fhir-models/fhir-models v0.1.0 h1:OO4iQ+reEoIvT8n5rltTICNeSEJ1id2VfhoQMFq0nFM=
 github.com/samply/golang-fhir-models/fhir-models v0.1.0/go.mod h1:YSlNNcIu8kzzW/91SIkcCxlL8cvCQic8bNHAzCawVic=
