@@ -76,6 +76,8 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 
 	// Add composition
 	bundleEntry.Resource, _ = composition.MarshalJSON()
+	myCompositionEntry := myUrn + compositionId
+	bundleEntry.FullUrl = &myCompositionEntry
 	bundle.Entry = append(bundle.Entry, bundleEntry)
 
 	// Add person
@@ -119,17 +121,18 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 				if headerStat["num"] > 0 {
 					vI, _ := strconv.Atoi(myval)
 					observation.ValueInteger = vI
-					observation.ValueString = ""
+					// observation.ValueString = ""
 					// Else treat it like a string
 				} else {
 					observation.ValueString = myval
-					observation.ValueInteger = 0
+					// observation.ValueInteger = 0
 				}
 			}
 			reference.Reference = &refPatientId // Observation refers to the /Patient/id
 			observation.Subject = reference
 			observation.ResourceType = "Observation"
 			observation.Status = fhir.ObservationStatus(fhir.ObservationStatusRegistered) // Required
+			codableConcept.Text = &myval
 			observation.Code = codableConcept
 			// @TODO To switch after debug
 
