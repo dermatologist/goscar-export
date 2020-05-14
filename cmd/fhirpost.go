@@ -8,20 +8,21 @@ import (
 	"io/ioutil"
 	"net/http"
 )
+
 func main() {
 	patientId := "12345"
-	given := []string {"Mickey"}
+	given := []string{"Mickey"}
 	family := "Mouse"
 
 	humanName := fhir.HumanName{
-		Given: given,
+		Given:  given,
 		Family: &family,
 	}
 
 	hn := []fhir.HumanName{}
 	hn = append(hn, humanName)
 	patient := fhir.Patient{
-		Id: &patientId,
+		Id:   &patientId,
 		Name: hn,
 	}
 	// fmt.Print(patient)
@@ -34,7 +35,8 @@ func main() {
 	postResource(string(b))
 }
 
-func postResource(jsonStr string)  {
+// postResource : Posts FHIR resource to the API
+func postResource(jsonStr string) {
 	url := "http://restapi3.apiary.io/notes"
 	fmt.Println("URL:>", url)
 
