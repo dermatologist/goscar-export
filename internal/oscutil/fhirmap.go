@@ -2,17 +2,21 @@ package oscutil
 
 import (
 	"github.com/E-Health/goscar"
+	"github.com/joho/godotenv"
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
+	"log"
+	"os"
 	"strconv"
 )
 
-// Extended as the existing one does not have valueString and valueInteger
+// FhirObservation : Extended Observation as the existing one does not have valueString and valueInteger
 type FhirObservation struct {
 	fhir.Observation
-	valueString  *string `json:"value-string,omitempty"`
-	valueInteger *int    `json:"value-integer,omitempty"`
+	ValueString  *string `json:"value-string,omitempty"`
+	ValueInteger *int    `json:"value-integer,omitempty"`
 }
 
+// maptofhir : maps the csvMap to a FHIR bundle.
 func maptofhir(csvMapValid []map[string]string) fhir.Bundle {
 	var composition = fhir.Composition{}
 	var patient = fhir.Patient{}
@@ -23,20 +27,26 @@ func maptofhir(csvMapValid []map[string]string) fhir.Bundle {
 	var bundleEntry = fhir.BundleEntry{}
 	var bundleType = fhir.BundleType(fhir.BundleTypeDocument) // The bundle is a document. The first resource is a Composition.
 
-	mySystem := "My System" // Get this from .env
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+	location := os.Getenv("GOSCAR_LOCATION")
+	username := os.Getenv("USER_NAME")
+	mySystem := os.Getenv("GOSCAR_SYSTEM")
 
 	toIgnore := []string{"id", "fdid", "dateCreated", "eform_link", "StaffSig", "SubmitButton", "efmfid"}
 
 	// Single composition
-	myValue := "Some Value"
+	myValue := location + username
 	identifier.System = &mySystem
 	identifier.Value = &myValue
 	composition.Identifier = &identifier
+	composition.Status = fhir.CompositionStatus(fhir.CompositionStatusFinal) // Required
 
 	// Single bundle
-	myValue = "Some Value"
 	identifier.System = &mySystem
-	identifier.Value = &myValue
+	identifier.Value = &location
 	bundle.Identifier = &identifier
 	bundle.Type = bundleType // The bundle is a document. The first resource is a Composition.
 	bundleEntry.Id = &mySystem
@@ -46,12 +56,17 @@ func maptofhir(csvMapValid []map[string]string) fhir.Bundle {
 	// Get headers from the first row
 	headers := CsvMap[0]
 	for _, record := range csvMapValid {
-		myValue := record["demographicNo"]
+
+		// Each record has a patient (ID is unique for location)
+		patientId := location + record["demographicNo"]
 		identifier.System = &mySystem
 		identifier.Value = &myValue
 		_identifier := []fhir.Identifier{}
 		_identifier = append(_identifier, identifier)
 		patient.Identifier = _identifier
+		patient.Id = &patientId // Needed for Reference
+
+		// Each value is an observation
 		for header, value := range headers {
 			// Function call to get the type of header -> number or string
 			headerStat := goscar.GetStats(header, RecordCount, CsvMapValid)
@@ -60,17 +75,20 @@ func maptofhir(csvMapValid []map[string]string) fhir.Bundle {
 			_identifier := []fhir.Identifier{}
 			_identifier = append(_identifier, identifier)
 			observation.Identifier = _identifier
+			// Create a unique ID for observation to be added to key to generate the final ID
+			observationId := location + record["efmfid"] + record["fdid"] + record["dateCreated"] + header
+			observation.Id = &observationId
 			if !goscar.IsMember(header, toIgnore) {
 				// If the value is a number
 				if headerStat["num"] > 0 {
 					vI, _ := strconv.Atoi(value)
-					observation.valueInteger = &vI
+					observation.ValueInteger = &vI
 					// Else treat it like a string
 				} else {
-					observation.valueString = &value
+					observation.ValueString = &value
 				}
 			}
-			reference.Reference = &myValue
+			reference.Reference = &patientId // Observation refers to the patient
 			observation.Subject = &reference
 		}
 		// Patient
