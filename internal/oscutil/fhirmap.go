@@ -32,7 +32,7 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 	toIgnore := []string{"id", "fdid", "dateCreated", "eform_link", "StaffSig", "SubmitButton", "efmfid"}
 
 	// Single composition
-	myValue := location + username
+	myValue := location + mySeparator + username
 	identifier.System = &mySystem
 	identifier.Value = &myValue
 	composition.Identifier = &identifier
