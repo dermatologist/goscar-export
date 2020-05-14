@@ -2,9 +2,7 @@ package oscutil
 
 import (
 	"github.com/E-Health/goscar"
-	"github.com/joho/godotenv"
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
-	"log"
 	"os"
 	"strconv"
 )
@@ -27,14 +25,10 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 	var bundleEntry = fhir.BundleEntry{}
 	var bundleType = fhir.BundleType(fhir.BundleTypeDocument) // The bundle is a document. The first resource is a Composition.
 
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
 	location := os.Getenv("GOSCAR_LOCATION")
 	username := os.Getenv("USER_NAME")
 	mySystem := os.Getenv("GOSCAR_SYSTEM")
-
+	mySeparator := os.Getenv("GOSCAR_ID_SEPARATOR")
 	toIgnore := []string{"id", "fdid", "dateCreated", "eform_link", "StaffSig", "SubmitButton", "efmfid"}
 
 	// Single composition
@@ -58,7 +52,7 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 	for _, record := range _csvMapValid {
 
 		// Each record has a patient (ID is unique for location)
-		patientId := location + record["demographicNo"]
+		patientId := location + mySeparator + record["demographicNo"]
 		identifier.System = &mySystem
 		identifier.Value = &myValue
 		_identifier := []fhir.Identifier{}
@@ -76,7 +70,10 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 			_identifier = append(_identifier, identifier)
 			observation.Identifier = _identifier
 			// Create a unique ID for observation to be added to key to generate the final ID
-			observationId := location + record["efmfid"] + record["fdid"] + record["dateCreated"] + header
+			observationId := location + mySeparator +
+				record["efmfid"] + mySeparator +
+				record["fdid"] + mySeparator +
+				record["dateCreated"] + mySeparator + header
 			observation.Id = &observationId
 			if !goscar.IsMember(header, toIgnore) {
 				// If the value is a number

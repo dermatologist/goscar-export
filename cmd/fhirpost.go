@@ -7,7 +7,9 @@ import (
 	"fmt"
 	"github.com/E-Health/goscar"
 	"github.com/E-Health/goscar-export/internal/oscutil"
+	"github.com/joho/godotenv"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 )
@@ -24,6 +26,12 @@ Usage:
 fhirpost -file=output.csv
 
 	`
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	if *filePtr != "" {
 		r, err := os.Open(*filePtr)
 		if err != nil {
@@ -47,7 +55,8 @@ fhirpost -file=output.csv
 
 // postResource : Posts FHIR resource to the API
 func postResource(jsonStr string) {
-	url := "" //FHIR endpoint from .env
+	url := os.Getenv("FHIR_SERVER")
+
 	fmt.Println("URL:>", url)
 	fmt.Print("FHIR:> ", jsonStr)
 
