@@ -8,3 +8,6 @@ github.com/montanaflynn/stats v0.5.0 h1:2EkzeTSqBB4V4bJwWrt5gIIrZmpJBcoIRGS2kWLg
 github.com/montanaflynn/stats v0.5.0/go.mod h1:wL8QJuTMNUDYhXwkmfOly8iTdp5TEcJFWZD2D7SIkUc=
 github.com/nsf/termbox-go v0.0.0-20200418040025-38ba6e5628f1 h1:lh3PyZvY+B9nFliSGTn5uFuqQQJGuNrD0MLCokv09ag=
 github.com/nsf/termbox-go v0.0.0-20200418040025-38ba6e5628f1/go.mod h1:IuKpRQcYE1Tfu+oAQqaLisqDeXgjyyltCfsaoYN18NQ=
+github.com/samply/golang-fhir-models v0.1.0 h1:CsJxjvM2rtxsW3cd1oLOpZub3lkcC8urDaOmsDLmI9s=
+github.com/samply/golang-fhir-models/fhir-models v0.1.0 h1:OO4iQ+reEoIvT8n5rltTICNeSEJ1id2VfhoQMFq0nFM=
+github.com/samply/golang-fhir-models/fhir-models v0.1.0/go.mod h1:YSlNNcIu8kzzW/91SIkcCxlL8cvCQic8bNHAzCawVic=
