@@ -43,7 +43,7 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 	identifier.Value = &location
 	bundle.Identifier = &identifier
 	bundle.Type = bundleType // The bundle is a document. The first resource is a Composition.
-	bundleEntry.Id = &mySystem
+	//bundleEntry.Id = &mySystem
 	bundleEntry.Resource, _ = composition.MarshalJSON()
 	bundle.Entry = append(bundle.Entry, bundleEntry)
 
@@ -87,15 +87,16 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 			}
 			reference.Reference = &patientId // Observation refers to the patient
 			observation.Subject = &reference
+			// Patient
+			// bundleEntry.Id = &mySystem
+			bundleEntry.Resource, _ = patient.MarshalJSON()
+			bundle.Entry = append(bundle.Entry, bundleEntry)
+			// Observation
+			// bundleEntry.Id = &mySystem
+			bundleEntry.Resource, _ = observation.MarshalJSON()
+			bundle.Entry = append(bundle.Entry, bundleEntry)
 		}
-		// Patient
-		bundleEntry.Id = &mySystem
-		bundleEntry.Resource, _ = patient.MarshalJSON()
-		bundle.Entry = append(bundle.Entry, bundleEntry)
-		// Observation
-		bundleEntry.Id = &mySystem
-		bundleEntry.Resource, _ = observation.MarshalJSON()
-		bundle.Entry = append(bundle.Entry, bundleEntry)
+
 	}
 
 	return bundle

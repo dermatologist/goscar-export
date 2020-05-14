@@ -59,7 +59,7 @@ func postResource(jsonStr string) {
 
 	fmt.Println("URL:>", url)
 	fmt.Print("FHIR:> ", jsonStr)
-
+	err := ioutil.WriteFile("data.json", []byte(jsonStr), 0644)
 	// var jsonStr = []byte(`{"title":"Buy cheese and bread for breakfast."}`)
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer([]byte(jsonStr)))
 	if err != nil {
