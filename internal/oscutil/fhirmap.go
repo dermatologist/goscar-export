@@ -7,6 +7,8 @@ import (
 	"os"
 	"strconv"
 	"github.com/google/uuid"
+    "regexp"
+	"time"
 )
 
 // FhirObservation : Extended Observation as the existing one does not have valueString and valueInteger
@@ -32,6 +34,7 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 	var bundleEntry = fhir.BundleEntry{}
 	var codableConcept = fhir.CodeableConcept{}
 	var bundleType = fhir.BundleType(fhir.BundleTypeDocument) // The bundle is a document. The first resource is a Composition.
+	var person = fhir.Person{}
 	id := uuid.New()
 
 	location := os.Getenv("GOSCAR_LOCATION")
@@ -42,17 +45,26 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 
 	toIgnore := []string{"id", "fdid", "dateCreated", "eform_link", "StaffSig", "SubmitButton", "efmfid"}
 
+	// Create a person who is the author and the subject of composition
+	personId := location + mySeparator + username
+	personRefId := "Person/" + personId 
+	person.Id = &personId
+
 	// Single composition
-	myValue := location + mySeparator + username
+	myTitle := location + mySeparator + username
 	identifier.System = &mySystem
-	identifier.Value = &myValue
+	identifier.Value = &myTitle
 	composition.Identifier = &identifier
 	composition.Status = fhir.CompositionStatus(fhir.CompositionStatusFinal) // Required
+	// Random UUID for composition
 	compositionId := id.String()
 	composition.Id = &compositionId
-	reference.Reference = &username
+	composition.Title = myTitle
+	dt := time.Now()
+	composition.Date = dt.Format("2006-01-02")
+	// Set author as author and subject
+	reference.Reference = &personRefId
 	composition.Author = append(composition.Author, reference)
-	reference.Reference = &username // Observation refers to the patient
 	composition.Subject = &reference
 
 	// Single bundle
@@ -61,9 +73,17 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 	bundle.Identifier = &identifier
 	bundle.Type = bundleType // The bundle is a document. The first resource is a Composition.
 	//bundleEntry.Id = &mySystem
+
+	// Add composition
 	bundleEntry.Resource, _ = composition.MarshalJSON()
 	bundle.Entry = append(bundle.Entry, bundleEntry)
 
+	// Add person
+	bundleEntry.Resource, _ = person.MarshalJSON()
+	myPersonEntry := myUrn + personId
+	bundleEntry.FullUrl = &myPersonEntry
+	bundle.Entry = append(bundle.Entry, bundleEntry)
+	
 	// Get headers from the first row
 	headers := _csvMapValid[0]
 	for _, record := range _csvMapValid {
@@ -72,7 +92,7 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 		patientId := location + mySeparator + record["demographicNo"]
 		refPatientId := "Patient/" + patientId
 		identifier.System = &mySystem
-		identifier.Value = &myValue
+		identifier.Value = &myTitle
 		_identifier := []fhir.Identifier{}
 		_identifier = append(_identifier, identifier)
 		patient.Identifier = _identifier
@@ -92,6 +112,8 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 				record["efmfid"] + mySeparator +
 				record["fdid"] + mySeparator +
 				record["dateCreated"] + mySeparator + header
+			reg, _ := regexp.Compile("[^a-zA-Z0-9]+")
+			observationId = reg.ReplaceAllString(observationId, "")
 			observation.Id = observationId
 			if !goscar.IsMember(header, toIgnore) {
 				if headerStat["num"] > 0 {
