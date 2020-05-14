@@ -1,5 +1,7 @@
 github.com/E-Health/goscar v1.2.3 h1:quHOiRVNf69/t68cQY0Vlwg1kXfTk+ThMM4byTFZulE=
 github.com/E-Health/goscar v1.2.3/go.mod h1:V/81TzaNcK3+iUg8u7RsCfzcPRnZspkv5UciIM8CIOY=
+github.com/google/uuid v1.1.1 h1:Gkbcsh/GbpXz7lPftLA3P6TYMwjCLYm83jiFQZF/3gY=
+github.com/google/uuid v1.1.1/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/joho/godotenv v1.3.0 h1:Zjp+RcGpHhGlrMbJzXTrZZPrWj+1vfm90La1wgB6Bhc=
 github.com/joho/godotenv v1.3.0/go.mod h1:7hK45KPybAkOC6peb+G5yklZfMxEjkZhHbwpqxOKXbg=
 github.com/jroimartin/gocui v0.4.0 h1:52jnalstgmc25FmtGcWqa0tcbMEWS6RpFLsOIO+I+E8=

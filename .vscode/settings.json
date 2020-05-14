@@ -1,5 +1,4 @@
 {
     "go.autocompleteUnimportedPackages": true,
-    "editor.formatOnSave": true,
-    "go.gopath": "/project/6000710/go"
+    "editor.formatOnSave": true
 }

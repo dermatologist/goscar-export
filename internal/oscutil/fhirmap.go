@@ -7,6 +7,7 @@ import (
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
 	"os"
 	"strconv"
+	"github.com/google/uuid"
 )
 
 // FhirObservation : Extended Observation as the existing one does not have valueString and valueInteger
@@ -17,6 +18,8 @@ type FhirObservation struct {
 	ValueString  string            `json:"valueString,omitempty"`
 	ValueInteger int               `json:"valueInteger,omitempty"`
 	ResourceType string            `json:"resourceType"`
+	Status       fhir.ObservationStatus `json:"status"`
+	Code         fhir.CodeableConcept             `json:"code"`
 }
 
 // MapToFHIR : maps the csvMap to a FHIR bundle.
@@ -28,7 +31,9 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 	var bundle = fhir.Bundle{}
 	var reference = fhir.Reference{}
 	var bundleEntry = fhir.BundleEntry{}
+	var codableConcept = fhir.CodeableConcept{}
 	var bundleType = fhir.BundleType(fhir.BundleTypeDocument) // The bundle is a document. The first resource is a Composition.
+	id := uuid.New()
 
 	location := os.Getenv("GOSCAR_LOCATION")
 	username := os.Getenv("USER_NAME")
@@ -42,6 +47,12 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 	identifier.Value = &myValue
 	composition.Identifier = &identifier
 	composition.Status = fhir.CompositionStatus(fhir.CompositionStatusFinal) // Required
+	compositionId := id.String()
+	composition.Id = &compositionId
+	reference.Reference = &username
+	composition.Author = append(composition.Author, reference)
+	reference.Reference = &username // Observation refers to the patient
+	composition.Subject = &reference
 
 	// Single bundle
 	identifier.System = &mySystem
@@ -94,6 +105,21 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 			reference.Reference = &patientId // Observation refers to the patient
 			observation.Subject = reference
 			observation.ResourceType = "Observation"
+			observation.Status = fhir.ObservationStatus(fhir.ObservationStatusRegistered) // Required
+			observation.Code = codableConcept
+			// @TODO To switch after debug
+
+			// // Patient
+			// // bundleEntry.Id = &mySystem
+			// bundleEntry.Resource, _ = patient.MarshalJSON()
+			// bundle.Entry = append(bundle.Entry, bundleEntry)
+			// // Observation
+			// // bundleEntry.Id = &mySystem
+			// // fmt.Println(*observation.ValueString)
+			// bundleEntry.Resource, _ = json.Marshal(observation)
+			// fmt.Print(string(bundleEntry.Resource))
+			// bundle.Entry = append(bundle.Entry, bundleEntry)
+		}
 			// Patient
 			// bundleEntry.Id = &mySystem
 			bundleEntry.Resource, _ = patient.MarshalJSON()
@@ -104,8 +130,6 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 			bundleEntry.Resource, _ = json.Marshal(observation)
 			fmt.Print(string(bundleEntry.Resource))
 			bundle.Entry = append(bundle.Entry, bundleEntry)
-		}
-
 	}
 
 	return bundle
