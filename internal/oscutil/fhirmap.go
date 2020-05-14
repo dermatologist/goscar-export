@@ -34,7 +34,7 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 	var bundleEntry = fhir.BundleEntry{}
 	var codableConcept = fhir.CodeableConcept{}
 	var bundleType = fhir.BundleType(fhir.BundleTypeDocument) // The bundle is a document. The first resource is a Composition.
-	var person = fhir.Person{}
+	var practitioner = fhir.Practitioner{}
 	id := uuid.New()
 
 	location := os.Getenv("GOSCAR_LOCATION")
@@ -45,10 +45,10 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 
 	toIgnore := []string{"id", "fdid", "dateCreated", "eform_link", "StaffSig", "SubmitButton", "efmfid"}
 
-	// Create a person who is the author and the subject of composition
-	personId := location + mySeparator + username
-	personRefId := "Person/" + personId 
-	person.Id = &personId
+	// Create a practitioner who is the author and the subject of composition
+	practitionerId := location + mySeparator + username
+	practitionerRefId := "Practitioner/" + practitionerId 
+	practitioner.Id = &practitionerId
 
 	// Single composition
 	myTitle := location + mySeparator + username
@@ -63,9 +63,13 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 	dt := time.Now()
 	composition.Date = dt.Format("2006-01-02")
 	// Set author as author and subject
-	reference.Reference = &personRefId
+	reference.Reference = &practitionerRefId
 	composition.Author = append(composition.Author, reference)
 	composition.Subject = &reference
+	codableText := myUrn + "E-Form"
+	codableConcept.Text = &codableText
+	composition.Type = codableConcept
+
 
 	// Single bundle
 	identifier.System = &mySystem
@@ -80,10 +84,10 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 	bundleEntry.FullUrl = &myCompositionEntry
 	bundle.Entry = append(bundle.Entry, bundleEntry)
 
-	// Add person
-	bundleEntry.Resource, _ = person.MarshalJSON()
-	myPersonEntry := myUrn + personId
-	bundleEntry.FullUrl = &myPersonEntry
+	// Add practitioner
+	bundleEntry.Resource, _ = practitioner.MarshalJSON()
+	myPractitionerEntry := myUrn + practitionerId
+	bundleEntry.FullUrl = &myPractitionerEntry
 	bundle.Entry = append(bundle.Entry, bundleEntry)
 	
 	// Get headers from the first row
@@ -132,12 +136,10 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 			observation.Subject = reference
 			observation.ResourceType = "Observation"
 			observation.Status = fhir.ObservationStatus(fhir.ObservationStatusRegistered) // Required
-			codableConcept.Text = &myval
+			codableText := myUrn + myval
+			codableConcept.Text = &codableText
 			observation.Code = codableConcept
 			// @TODO To switch after debug
-
-
-		}
 			// Unique ID
 			myUuid := myUrn + id.String()
 			myPatientEntry := myUuid + "_patient"
@@ -153,6 +155,10 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 			bundleEntry.Resource, _ = json.Marshal(observation)
 			bundleEntry.FullUrl = &myObservationEntry
 			bundle.Entry = append(bundle.Entry, bundleEntry)
+			observation = FhirObservation{} // Clear values
+
+		}
+
 	}
 
 	return bundle
