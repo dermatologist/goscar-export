@@ -11,22 +11,12 @@ import (
 
 // FhirObservation : Extended Observation as the existing one does not have valueString and valueInteger
 type FhirObservation struct {
-	obs          fhir.Observation
-	valueString  *string `json:"ValueString,omitempty"`
-	valueInteger *int    `json:"ValueInteger,omitempty"`
-}
-
-type OtherFhirObservation FhirObservation
-
-// MarshalJSON marshals the given Observation as JSON into a byte slice
-func (r FhirObservation) MarshalFhirJSON() ([]byte, error) {
-	return json.Marshal(struct {
-		OtherFhirObservation
-		ResourceType string `json:"resourceType"`
-	}{
-		OtherFhirObservation: OtherFhirObservation(r),
-		ResourceType:         "Observation",
-	})
+	Id           string            `json:"id,omitempty"`
+	Identifier   []fhir.Identifier `json:"identifier,omitempty"`
+	Subject      fhir.Reference    `json:"subject,omitempty"`
+	ValueString  string            `json:"valueString,omitempty"`
+	ValueInteger int               `json:"valueInteger,omitempty"`
+	ResourceType string            `json:"resourceType"`
 }
 
 // MapToFHIR : maps the csvMap to a FHIR bundle.
@@ -83,26 +73,27 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 			identifier.Value = &header
 			_identifier := []fhir.Identifier{}
 			_identifier = append(_identifier, identifier)
-			observation.obs.Identifier = _identifier
+			observation.Identifier = _identifier
 			// Create a unique ID for observation to be added to key to generate the final ID
 			observationId := location + mySeparator +
 				record["efmfid"] + mySeparator +
 				record["fdid"] + mySeparator +
 				record["dateCreated"] + mySeparator + header
-			observation.obs.Id = &observationId
+			observation.Id = observationId
 			if !goscar.IsMember(header, toIgnore) {
 				if headerStat["num"] > 0 {
 					vI, _ := strconv.Atoi(myval)
-					observation.valueInteger = &vI
-					observation.valueString = nil
+					observation.ValueInteger = vI
+					observation.ValueString = ""
 					// Else treat it like a string
 				} else {
-					observation.valueString = &myval
-					observation.valueInteger = nil
+					observation.ValueString = myval
+					observation.ValueInteger = 0
 				}
 			}
 			reference.Reference = &patientId // Observation refers to the patient
-			observation.obs.Subject = &reference
+			observation.Subject = reference
+			observation.ResourceType = "Observation"
 			// Patient
 			// bundleEntry.Id = &mySystem
 			bundleEntry.Resource, _ = patient.MarshalJSON()
@@ -110,7 +101,7 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 			// Observation
 			// bundleEntry.Id = &mySystem
 			// fmt.Println(*observation.ValueString)
-			bundleEntry.Resource, _ = observation.MarshalFhirJSON()
+			bundleEntry.Resource, _ = json.Marshal(observation)
 			fmt.Print(string(bundleEntry.Resource))
 			bundle.Entry = append(bundle.Entry, bundleEntry)
 		}
