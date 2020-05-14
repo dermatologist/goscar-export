@@ -44,7 +44,7 @@ fhirpost -file=output.csv
 			fmt.Println(err)
 			return
 		}
-		fmt.Println(string(b))
+		// fmt.Println(string(b))
 		postResource(string(b))
 	} else {
 		fmt.Print(usage)
@@ -57,8 +57,8 @@ fhirpost -file=output.csv
 func postResource(jsonStr string) {
 	url := os.Getenv("FHIR_SERVER")
 
-	fmt.Println("URL:>", url)
-	fmt.Print("FHIR:> ", jsonStr)
+	//fmt.Println("URL:>", url)
+	//fmt.Print("FHIR:> ", jsonStr)
 	err := ioutil.WriteFile("data.json", []byte(jsonStr), 0644)
 	// var jsonStr = []byte(`{"title":"Buy cheese and bread for breakfast."}`)
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer([]byte(jsonStr)))
@@ -76,7 +76,7 @@ func postResource(jsonStr string) {
 	defer resp.Body.Close()
 
 	fmt.Println("response Status:", resp.Status)
-	fmt.Println("response Headers:", resp.Header)
-	body, _ := ioutil.ReadAll(resp.Body)
-	fmt.Println("response Body:", string(body))
+	//fmt.Println("response Headers:", resp.Header)
+	//body, _ := ioutil.ReadAll(resp.Body)
+	//fmt.Println("response Body:", string(body))
 }

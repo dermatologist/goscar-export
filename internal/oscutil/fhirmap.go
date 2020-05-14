@@ -1,6 +1,8 @@
 package oscutil
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/E-Health/goscar"
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
 	"os"
@@ -9,9 +11,22 @@ import (
 
 // FhirObservation : Extended Observation as the existing one does not have valueString and valueInteger
 type FhirObservation struct {
-	fhir.Observation
-	ValueString  *string `json:"value-string,omitempty"`
-	ValueInteger *int    `json:"value-integer,omitempty"`
+	obs          fhir.Observation
+	valueString  *string `json:"ValueString,omitempty"`
+	valueInteger *int    `json:"ValueInteger,omitempty"`
+}
+
+type OtherFhirObservation FhirObservation
+
+// MarshalJSON marshals the given Observation as JSON into a byte slice
+func (r FhirObservation) MarshalFhirJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		OtherFhirObservation
+		ResourceType string `json:"resourceType"`
+	}{
+		OtherFhirObservation: OtherFhirObservation(r),
+		ResourceType:         "Observation",
+	})
 }
 
 // MapToFHIR : maps the csvMap to a FHIR bundle.
@@ -61,39 +76,42 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 		patient.Id = &patientId // Needed for Reference
 
 		// Each value is an observation
-		for header, value := range headers {
+		for header, myval := range headers {
 			// Function call to get the type of header -> number or string
 			headerStat := goscar.GetStats(header, RecordCount, _csvMapValid)
 			identifier.System = &mySystem
 			identifier.Value = &header
 			_identifier := []fhir.Identifier{}
 			_identifier = append(_identifier, identifier)
-			observation.Identifier = _identifier
+			observation.obs.Identifier = _identifier
 			// Create a unique ID for observation to be added to key to generate the final ID
 			observationId := location + mySeparator +
 				record["efmfid"] + mySeparator +
 				record["fdid"] + mySeparator +
 				record["dateCreated"] + mySeparator + header
-			observation.Id = &observationId
+			observation.obs.Id = &observationId
 			if !goscar.IsMember(header, toIgnore) {
-				// If the value is a number
 				if headerStat["num"] > 0 {
-					vI, _ := strconv.Atoi(value)
-					observation.ValueInteger = &vI
+					vI, _ := strconv.Atoi(myval)
+					observation.valueInteger = &vI
+					observation.valueString = nil
 					// Else treat it like a string
 				} else {
-					observation.ValueString = &value
+					observation.valueString = &myval
+					observation.valueInteger = nil
 				}
 			}
 			reference.Reference = &patientId // Observation refers to the patient
-			observation.Subject = &reference
+			observation.obs.Subject = &reference
 			// Patient
 			// bundleEntry.Id = &mySystem
 			bundleEntry.Resource, _ = patient.MarshalJSON()
 			bundle.Entry = append(bundle.Entry, bundleEntry)
 			// Observation
 			// bundleEntry.Id = &mySystem
-			bundleEntry.Resource, _ = observation.MarshalJSON()
+			// fmt.Println(*observation.ValueString)
+			bundleEntry.Resource, _ = observation.MarshalFhirJSON()
+			fmt.Print(string(bundleEntry.Resource))
 			bundle.Entry = append(bundle.Entry, bundleEntry)
 		}
 
