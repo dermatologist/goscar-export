@@ -1,17 +1,16 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
+
 	"github.com/E-Health/goscar"
 	"github.com/E-Health/goscar-export/internal/oscutil"
 	"github.com/joho/godotenv"
-	"io/ioutil"
-	"log"
-	"net/http"
-	"os"
 )
 
 func main() {
@@ -44,7 +43,7 @@ fhirpost -file=output.csv
 			fmt.Println(err)
 			return
 		}
-		fmt.Println(string(b))
+		//fmt.Println(string(b))
 		postResource(string(b))
 	} else {
 		fmt.Print(usage)
@@ -58,25 +57,27 @@ func postResource(jsonStr string) {
 	url := os.Getenv("FHIR_SERVER")
 
 	fmt.Println("URL:>", url)
-	fmt.Print("FHIR:> ", jsonStr)
+	// fmt.Print("FHIR:> ", jsonStr)
 
-	// var jsonStr = []byte(`{"title":"Buy cheese and bread for breakfast."}`)
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer([]byte(jsonStr)))
-	if err != nil {
-		panic(err)
-	} else {
-		req.Header.Set("X-Custom-Header", "myvalue")
-		req.Header.Set("Content-Type", "application/json")
-	}
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		panic(err)
-	}
-	defer resp.Body.Close()
+	err := ioutil.WriteFile("data.json", []byte(jsonStr), 0644)
+	fmt.Print(err)
+	// // var jsonStr = []byte(`{"title":"Buy cheese and bread for breakfast."}`)
+	// req, err := http.NewRequest("POST", url, bytes.NewBuffer([]byte(jsonStr)))
+	// if err != nil {
+	// 	panic(err)
+	// } else {
+	// 	req.Header.Set("X-Custom-Header", "myvalue")
+	// 	req.Header.Set("Content-Type", "application/json")
+	// }
+	// client := &http.Client{}
+	// resp, err := client.Do(req)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// defer resp.Body.Close()
 
-	fmt.Println("response Status:", resp.Status)
-	fmt.Println("response Headers:", resp.Header)
-	body, _ := ioutil.ReadAll(resp.Body)
-	fmt.Println("response Body:", string(body))
+	// fmt.Println("response Status:", resp.Status)
+	// fmt.Println("response Headers:", resp.Header)
+	// body, _ := ioutil.ReadAll(resp.Body)
+	// fmt.Println("response Body:", string(body))
 }

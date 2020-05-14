@@ -1,10 +1,11 @@
 package oscutil
 
 import (
-	"github.com/E-Health/goscar"
-	"github.com/samply/golang-fhir-models/fhir-models/fhir"
 	"os"
 	"strconv"
+
+	"github.com/E-Health/goscar"
+	"github.com/samply/golang-fhir-models/fhir-models/fhir"
 )
 
 // FhirObservation : Extended Observation as the existing one does not have valueString and valueInteger
@@ -87,15 +88,16 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 			}
 			reference.Reference = &patientId // Observation refers to the patient
 			observation.Subject = &reference
+
+			// Patient
+			bundleEntry.Id = &mySystem
+			bundleEntry.Resource, _ = patient.MarshalJSON()
+			bundle.Entry = append(bundle.Entry, bundleEntry)
+			// Observation
+			bundleEntry.Id = &mySystem
+			bundleEntry.Resource, _ = observation.MarshalJSON()
+			bundle.Entry = append(bundle.Entry, bundleEntry)
 		}
-		// Patient
-		bundleEntry.Id = &mySystem
-		bundleEntry.Resource, _ = patient.MarshalJSON()
-		bundle.Entry = append(bundle.Entry, bundleEntry)
-		// Observation
-		bundleEntry.Id = &mySystem
-		bundleEntry.Resource, _ = observation.MarshalJSON()
-		bundle.Entry = append(bundle.Entry, bundleEntry)
 	}
 
 	return bundle
