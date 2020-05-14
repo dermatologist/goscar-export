@@ -1,6 +1,8 @@
 package oscutil
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/E-Health/goscar"
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
 	"os"
@@ -9,9 +11,12 @@ import (
 
 // FhirObservation : Extended Observation as the existing one does not have valueString and valueInteger
 type FhirObservation struct {
-	fhir.Observation
-	ValueString  *string `json:"value-string,omitempty"`
-	ValueInteger *int    `json:"value-integer,omitempty"`
+	Id           string            `json:"id,omitempty"`
+	Identifier   []fhir.Identifier `json:"identifier,omitempty"`
+	Subject      fhir.Reference    `json:"subject,omitempty"`
+	ValueString  string            `json:"valueString,omitempty"`
+	ValueInteger int               `json:"valueInteger,omitempty"`
+	ResourceType string            `json:"resourceType"`
 }
 
 // MapToFHIR : maps the csvMap to a FHIR bundle.
@@ -43,7 +48,7 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 	identifier.Value = &location
 	bundle.Identifier = &identifier
 	bundle.Type = bundleType // The bundle is a document. The first resource is a Composition.
-	bundleEntry.Id = &mySystem
+	//bundleEntry.Id = &mySystem
 	bundleEntry.Resource, _ = composition.MarshalJSON()
 	bundle.Entry = append(bundle.Entry, bundleEntry)
 
@@ -61,7 +66,7 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 		patient.Id = &patientId // Needed for Reference
 
 		// Each value is an observation
-		for header, value := range headers {
+		for header, myval := range headers {
 			// Function call to get the type of header -> number or string
 			headerStat := goscar.GetStats(header, RecordCount, _csvMapValid)
 			identifier.System = &mySystem
@@ -74,28 +79,33 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 				record["efmfid"] + mySeparator +
 				record["fdid"] + mySeparator +
 				record["dateCreated"] + mySeparator + header
-			observation.Id = &observationId
+			observation.Id = observationId
 			if !goscar.IsMember(header, toIgnore) {
-				// If the value is a number
 				if headerStat["num"] > 0 {
-					vI, _ := strconv.Atoi(value)
-					observation.ValueInteger = &vI
+					vI, _ := strconv.Atoi(myval)
+					observation.ValueInteger = vI
+					observation.ValueString = ""
 					// Else treat it like a string
 				} else {
-					observation.ValueString = &value
+					observation.ValueString = myval
+					observation.ValueInteger = 0
 				}
 			}
 			reference.Reference = &patientId // Observation refers to the patient
-			observation.Subject = &reference
+			observation.Subject = reference
+			observation.ResourceType = "Observation"
+			// Patient
+			// bundleEntry.Id = &mySystem
+			bundleEntry.Resource, _ = patient.MarshalJSON()
+			bundle.Entry = append(bundle.Entry, bundleEntry)
+			// Observation
+			// bundleEntry.Id = &mySystem
+			// fmt.Println(*observation.ValueString)
+			bundleEntry.Resource, _ = json.Marshal(observation)
+			fmt.Print(string(bundleEntry.Resource))
+			bundle.Entry = append(bundle.Entry, bundleEntry)
 		}
-		// Patient
-		bundleEntry.Id = &mySystem
-		bundleEntry.Resource, _ = patient.MarshalJSON()
-		bundle.Entry = append(bundle.Entry, bundleEntry)
-		// Observation
-		bundleEntry.Id = &mySystem
-		bundleEntry.Resource, _ = observation.MarshalJSON()
-		bundle.Entry = append(bundle.Entry, bundleEntry)
+
 	}
 
 	return bundle

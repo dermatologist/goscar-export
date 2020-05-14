@@ -17,5 +17,6 @@
 # Binaries
 bin/
 data.csv
+data.json
 
 .idea
