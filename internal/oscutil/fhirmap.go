@@ -2,7 +2,6 @@ package oscutil
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/E-Health/goscar"
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
 	"os"
@@ -39,6 +38,8 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 	username := os.Getenv("USER_NAME")
 	mySystem := os.Getenv("GOSCAR_SYSTEM")
 	mySeparator := os.Getenv("GOSCAR_ID_SEPARATOR")
+	myUrn := os.Getenv("GOSCAR_URN")
+
 	toIgnore := []string{"id", "fdid", "dateCreated", "eform_link", "StaffSig", "SubmitButton", "efmfid"}
 
 	// Single composition
@@ -69,6 +70,7 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 
 		// Each record has a patient (ID is unique for location)
 		patientId := location + mySeparator + record["demographicNo"]
+		refPatientId := "Patient/" + patientId
 		identifier.System = &mySystem
 		identifier.Value = &myValue
 		_identifier := []fhir.Identifier{}
@@ -102,33 +104,29 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 					observation.ValueInteger = 0
 				}
 			}
-			reference.Reference = &patientId // Observation refers to the patient
+			reference.Reference = &refPatientId // Observation refers to the /Patient/id
 			observation.Subject = reference
 			observation.ResourceType = "Observation"
 			observation.Status = fhir.ObservationStatus(fhir.ObservationStatusRegistered) // Required
 			observation.Code = codableConcept
 			// @TODO To switch after debug
 
-			// // Patient
-			// // bundleEntry.Id = &mySystem
-			// bundleEntry.Resource, _ = patient.MarshalJSON()
-			// bundle.Entry = append(bundle.Entry, bundleEntry)
-			// // Observation
-			// // bundleEntry.Id = &mySystem
-			// // fmt.Println(*observation.ValueString)
-			// bundleEntry.Resource, _ = json.Marshal(observation)
-			// fmt.Print(string(bundleEntry.Resource))
-			// bundle.Entry = append(bundle.Entry, bundleEntry)
+
 		}
+			// Unique ID
+			myUuid := myUrn + id.String()
+			myPatientEntry := myUuid + "_patient"
+			myObservationEntry := myUuid + "_observation"
 			// Patient
 			// bundleEntry.Id = &mySystem
 			bundleEntry.Resource, _ = patient.MarshalJSON()
+			bundleEntry.FullUrl = &myPatientEntry
 			bundle.Entry = append(bundle.Entry, bundleEntry)
+		
 			// Observation
 			// bundleEntry.Id = &mySystem
-			// fmt.Println(*observation.ValueString)
 			bundleEntry.Resource, _ = json.Marshal(observation)
-			fmt.Print(string(bundleEntry.Resource))
+			bundleEntry.FullUrl = &myObservationEntry
 			bundle.Entry = append(bundle.Entry, bundleEntry)
 	}
 
