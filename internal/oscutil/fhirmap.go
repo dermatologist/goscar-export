@@ -90,11 +90,11 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 			observation.Subject = &reference
 
 			// Patient
-			bundleEntry.Id = &mySystem
+			// bundleEntry.Id = &mySystem
 			bundleEntry.Resource, _ = patient.MarshalJSON()
 			bundle.Entry = append(bundle.Entry, bundleEntry)
 			// Observation
-			bundleEntry.Id = &mySystem
+			// bundleEntry.Id = &mySystem
 			bundleEntry.Resource, _ = observation.MarshalJSON()
 			bundle.Entry = append(bundle.Entry, bundleEntry)
 		}
