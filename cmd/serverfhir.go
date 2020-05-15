@@ -21,7 +21,7 @@ func main() {
 	s := server.NewServer(mongoHost)
 
 	config := server.DefaultConfig
-	config.ServerURL = "http://yourserver.com:7001/"
+	config.ServerURL = "http://localhost:7001/"
 
 	// if *serverURL != "" {
 	// 	config.ServerURL = *serverURL

@@ -57,8 +57,8 @@ fhirpost -file=output.csv
 func postResource(jsonStr string) {
 	url := os.Getenv("FHIR_SERVER")
 
-	//fmt.Println("URL:>", url)
-	//fmt.Print("FHIR:> ", jsonStr)
+	fmt.Println("URL:>", url)
+	fmt.Print("FHIR:> ", jsonStr)
 	err := ioutil.WriteFile("data.json", []byte(jsonStr), 0644)
 	// var jsonStr = []byte(`{"title":"Buy cheese and bread for breakfast."}`)
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer([]byte(jsonStr)))

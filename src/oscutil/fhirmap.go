@@ -36,6 +36,9 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 	var codableConcept = fhir.CodeableConcept{}
 	var bundleType = fhir.BundleType(fhir.BundleTypeDocument) // The bundle is a document. The first resource is a Composition.
 	var practitioner = fhir.Practitioner{}
+	var bundleEntryRequest = fhir.BundleEntryRequest{}
+	bundleEntryRequest.Method = fhir.HTTPVerbPOST
+	bundleEntry.Request = &bundleEntryRequest;
 	id := uuid.New()
 	dt := time.Now()
 	patients := []string{}
