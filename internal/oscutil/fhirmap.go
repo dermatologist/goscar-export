@@ -36,6 +36,7 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 	var bundleType = fhir.BundleType(fhir.BundleTypeDocument) // The bundle is a document. The first resource is a Composition.
 	var practitioner = fhir.Practitioner{}
 	id := uuid.New()
+	patients := []string{}
 
 	location := os.Getenv("GOSCAR_LOCATION")
 	username := os.Getenv("USER_NAME")
@@ -77,6 +78,8 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 	bundle.Identifier = &identifier
 	bundle.Type = bundleType // The bundle is a document. The first resource is a Composition.
 	//bundleEntry.Id = &mySystem
+	bundleTimestamp := dt.UTC().Format("2006-01-02T15:04:05Z")
+	bundle.Timestamp = &bundleTimestamp
 
 	// Add composition
 	bundleEntry.Resource, _ = composition.MarshalJSON()
@@ -141,15 +144,17 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 			observation.Code = codableConcept
 			// @TODO To switch after debug
 			// Unique ID
+			id := uuid.New()
 			myUuid := myUrn + id.String()
 			myPatientEntry := myUuid + "_patient"
 			myObservationEntry := myUuid + "_observation"
 			// Patient
-			// bundleEntry.Id = &mySystem
-			bundleEntry.Resource, _ = patient.MarshalJSON()
-			bundleEntry.FullUrl = &myPatientEntry
-			bundle.Entry = append(bundle.Entry, bundleEntry)
-		
+			if _, added := Find(patients, patientId); added != true {			
+				bundleEntry.Resource, _ = patient.MarshalJSON()
+				bundleEntry.FullUrl = &myPatientEntry
+				bundle.Entry = append(bundle.Entry, bundleEntry)
+				patients = append(patients, patientId)
+			}
 			// Observation
 			// bundleEntry.Id = &mySystem
 			bundleEntry.Resource, _ = json.Marshal(observation)
@@ -162,4 +167,15 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 	}
 
 	return bundle
+}
+
+// Find takes a slice and looks for an element in it. If found it will
+// return it's key, otherwise it will return -1 and a bool of false.
+func Find(slice []string, val string) (int, bool) {
+    for i, item := range slice {
+        if item == val {
+            return i, true
+        }
+    }
+    return -1, false
 }
