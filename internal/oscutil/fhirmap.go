@@ -36,6 +36,7 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 	var bundleType = fhir.BundleType(fhir.BundleTypeDocument) // The bundle is a document. The first resource is a Composition.
 	var practitioner = fhir.Practitioner{}
 	id := uuid.New()
+	dt := time.Now()
 	patients := []string{}
 
 	location := os.Getenv("GOSCAR_LOCATION")
@@ -46,23 +47,32 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 
 	toIgnore := []string{"id", "fdid", "dateCreated", "eform_link", "StaffSig", "SubmitButton", "efmfid"}
 
+	// Single bundle
+	myTitle := location + mySeparator + username
+	identifier.System = &mySystem
+	identifier.Value = &myTitle
+	bundle.Identifier = &identifier
+	bundle.Type = bundleType // The bundle is a document. The first resource is a Composition.
+	//bundleEntry.Id = &mySystem
+	bundleTimestamp := dt.UTC().Format("2006-01-02T15:04:05Z")
+	bundle.Timestamp = &bundleTimestamp
+
+		
 	// Create a practitioner who is the author and the subject of composition
 	practitionerId := location + mySeparator + username
 	practitionerRefId := "Practitioner/" + practitionerId 
 	practitioner.Id = &practitionerId
 
 	// Single composition
-	myTitle := location + mySeparator + username
-	identifier.System = &mySystem
-	identifier.Value = &myTitle
 	composition.Identifier = &identifier
 	composition.Status = fhir.CompositionStatus(fhir.CompositionStatusFinal) // Required
+	
 	// Random UUID for composition
 	compositionId := id.String()
 	composition.Id = &compositionId
 	composition.Title = myTitle
-	dt := time.Now()
 	composition.Date = dt.Format("2006-01-02")
+	
 	// Set author as author and subject
 	reference.Reference = &practitionerRefId
 	composition.Author = append(composition.Author, reference)
@@ -70,16 +80,6 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 	codableText := myUrn + "E-Form"
 	codableConcept.Text = &codableText
 	composition.Type = codableConcept
-
-
-	// Single bundle
-	identifier.System = &mySystem
-	identifier.Value = &location
-	bundle.Identifier = &identifier
-	bundle.Type = bundleType // The bundle is a document. The first resource is a Composition.
-	//bundleEntry.Id = &mySystem
-	bundleTimestamp := dt.UTC().Format("2006-01-02T15:04:05Z")
-	bundle.Timestamp = &bundleTimestamp
 
 	// Add composition
 	bundleEntry.Resource, _ = composition.MarshalJSON()
