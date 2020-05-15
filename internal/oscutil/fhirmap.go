@@ -3,24 +3,24 @@ package oscutil
 import (
 	"encoding/json"
 	"github.com/E-Health/goscar"
+	"github.com/google/uuid"
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
 	"os"
+	"regexp"
 	"strconv"
-	"github.com/google/uuid"
-    "regexp"
 	"time"
 )
 
 // FhirObservation : Extended Observation as the existing one does not have valueString and valueInteger
 type FhirObservation struct {
-	Id           string            `json:"id,omitempty"`
-	Identifier   []fhir.Identifier `json:"identifier,omitempty"`
-	Subject      fhir.Reference    `json:"subject,omitempty"`
-	ValueString  string            `json:"valueString,omitempty"`
-	ValueInteger int               `json:"valueInteger,omitempty"`
-	ResourceType string            `json:"resourceType"`
+	Id           string                 `json:"id,omitempty"`
+	Identifier   []fhir.Identifier      `json:"identifier,omitempty"`
+	Subject      fhir.Reference         `json:"subject,omitempty"`
+	ValueString  string                 `json:"valueString,omitempty"`
+	ValueInteger int                    `json:"valueInteger,omitempty"`
+	ResourceType string                 `json:"resourceType"`
 	Status       fhir.ObservationStatus `json:"status"`
-	Code         fhir.CodeableConcept             `json:"code"`
+	Code         fhir.CodeableConcept   `json:"code"`
 }
 
 // MapToFHIR : maps the csvMap to a FHIR bundle.
@@ -44,6 +44,7 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 	mySystem := os.Getenv("GOSCAR_SYSTEM")
 	mySeparator := os.Getenv("GOSCAR_ID_SEPARATOR")
 	myUrn := os.Getenv("GOSCAR_URN")
+	myForm := os.Getenv("GOSCAR_FORM_NAME")
 
 	toIgnore := []string{"id", "fdid", "dateCreated", "eform_link", "StaffSig", "SubmitButton", "efmfid"}
 
@@ -57,27 +58,26 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 	bundleTimestamp := dt.UTC().Format("2006-01-02T15:04:05Z")
 	bundle.Timestamp = &bundleTimestamp
 
-		
 	// Create a practitioner who is the author and the subject of composition
 	practitionerId := location + mySeparator + username
-	practitionerRefId := "Practitioner/" + practitionerId 
+	practitionerRefId := "Practitioner/" + practitionerId
 	practitioner.Id = &practitionerId
 
 	// Single composition
 	composition.Identifier = &i1
 	composition.Status = fhir.CompositionStatus(fhir.CompositionStatusFinal) // Required
-	
+
 	// Random UUID for composition
 	compositionId := id.String()
 	composition.Id = &compositionId
-	composition.Title = myTitle
+	composition.Title = myTitle + mySeparator + myForm
 	composition.Date = dt.Format("2006-01-02")
-	
+
 	// Set author as author and subject
 	reference.Reference = &practitionerRefId
 	composition.Author = append(composition.Author, reference)
 	composition.Subject = &reference
-	codableText := myUrn + "E-Form"
+	codableText := myUrn + "E-Form" + myForm
 	codableConcept.Text = &codableText
 	composition.Type = codableConcept
 
@@ -92,7 +92,7 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 	myPractitionerEntry := myUrn + practitionerId
 	bundleEntry.FullUrl = &myPractitionerEntry
 	bundle.Entry = append(bundle.Entry, bundleEntry)
-	
+
 	// Get headers from the first row
 	headers := _csvMapValid[0]
 	for _, record := range _csvMapValid {
@@ -150,8 +150,8 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 			myUuid := myUrn + id.String()
 			myPatientEntry := myUuid + "_patient"
 			myObservationEntry := myUuid + "_observation"
-			// Patient
-			if _, added := Find(patients, patientId); added != true {			
+			// Add patient if not added already
+			if !goscar.IsMember(patientId, patients) {
 				bundleEntry.Resource, _ = patient.MarshalJSON()
 				bundleEntry.FullUrl = &myPatientEntry
 				bundle.Entry = append(bundle.Entry, bundleEntry)
@@ -169,15 +169,4 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 	}
 
 	return bundle
-}
-
-// Find takes a slice and looks for an element in it. If found it will
-// return it's key, otherwise it will return -1 and a bool of false.
-func Find(slice []string, val string) (int, bool) {
-    for i, item := range slice {
-        if item == val {
-            return i, true
-        }
-    }
-    return -1, false
 }
