@@ -3,24 +3,25 @@ package oscutil
 import (
 	"encoding/json"
 	"github.com/E-Health/goscar"
+	"github.com/E-Health/goscar-export/internal/oscutil"
+	"github.com/google/uuid"
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
 	"os"
+	"regexp"
 	"strconv"
-	"github.com/google/uuid"
-    "regexp"
 	"time"
 )
 
 // FhirObservation : Extended Observation as the existing one does not have valueString and valueInteger
 type FhirObservation struct {
-	Id           string            `json:"id,omitempty"`
-	Identifier   []fhir.Identifier `json:"identifier,omitempty"`
-	Subject      fhir.Reference    `json:"subject,omitempty"`
-	ValueString  string            `json:"valueString,omitempty"`
-	ValueInteger int               `json:"valueInteger,omitempty"`
-	ResourceType string            `json:"resourceType"`
+	Id           string                 `json:"id,omitempty"`
+	Identifier   []fhir.Identifier      `json:"identifier,omitempty"`
+	Subject      fhir.Reference         `json:"subject,omitempty"`
+	ValueString  string                 `json:"valueString,omitempty"`
+	ValueInteger int                    `json:"valueInteger,omitempty"`
+	ResourceType string                 `json:"resourceType"`
 	Status       fhir.ObservationStatus `json:"status"`
-	Code         fhir.CodeableConcept             `json:"code"`
+	Code         fhir.CodeableConcept   `json:"code"`
 }
 
 // MapToFHIR : maps the csvMap to a FHIR bundle.
@@ -41,9 +42,15 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 
 	location := os.Getenv("GOSCAR_LOCATION")
 	username := os.Getenv("USER_NAME")
-	mySystem := os.Getenv("GOSCAR_SYSTEM")
 	mySeparator := os.Getenv("GOSCAR_ID_SEPARATOR")
 	myUrn := os.Getenv("GOSCAR_URN")
+	myForm := os.Getenv("GOSCAR_FORM_NAME")
+	myVocabulary := os.Getenv("GOSCAR_SYSTEM_VOCABULARY")
+
+	mySystem := os.Getenv("GOSCAR_SYSTEM")
+	mySystemEntry := os.Getenv("GOSCAR_SYSTEM_ENTRY")
+	mySystemTimestamp := os.Getenv("GOSCAR_SYSTEM_TIMESTAMP")
+	mySystemClinic := os.Getenv("GOSCAR_SYSTEM_CLINIC")
 
 	toIgnore := []string{"id", "fdid", "dateCreated", "eform_link", "StaffSig", "SubmitButton", "efmfid"}
 
@@ -53,31 +60,29 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 	i1.Value = &myTitle
 	bundle.Identifier = &i1
 	bundle.Type = bundleType // The bundle is a document. The first resource is a Composition.
-	//bundleEntry.Id = &mySystem
 	bundleTimestamp := dt.UTC().Format("2006-01-02T15:04:05Z")
 	bundle.Timestamp = &bundleTimestamp
 
-		
 	// Create a practitioner who is the author and the subject of composition
 	practitionerId := location + mySeparator + username
-	practitionerRefId := "Practitioner/" + practitionerId 
+	practitionerRefId := "Practitioner/" + practitionerId
 	practitioner.Id = &practitionerId
 
 	// Single composition
 	composition.Identifier = &i1
 	composition.Status = fhir.CompositionStatus(fhir.CompositionStatusFinal) // Required
-	
+
 	// Random UUID for composition
 	compositionId := id.String()
 	composition.Id = &compositionId
-	composition.Title = myTitle
+	composition.Title = myTitle + mySeparator + myForm
 	composition.Date = dt.Format("2006-01-02")
-	
+
 	// Set author as author and subject
 	reference.Reference = &practitionerRefId
 	composition.Author = append(composition.Author, reference)
 	composition.Subject = &reference
-	codableText := myUrn + "E-Form"
+	codableText := myUrn + "E-Form" + mySeparator + myForm
 	codableConcept.Text = &codableText
 	composition.Type = codableConcept
 
@@ -92,13 +97,14 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 	myPractitionerEntry := myUrn + practitionerId
 	bundleEntry.FullUrl = &myPractitionerEntry
 	bundle.Entry = append(bundle.Entry, bundleEntry)
-	
+
 	// Get headers from the first row
 	headers := _csvMapValid[0]
 	for _, record := range _csvMapValid {
 
 		// Each record has a patient (ID is unique for location)
-		patientId := location + mySeparator + record["demographicNo"]
+		var patientId string
+		patientId = location + mySeparator + record["demographicNo"]
 		refPatientId := "Patient/" + patientId
 		identifier := fhir.Identifier{}
 		identifier.System = &mySystem
@@ -110,16 +116,40 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 
 		// Each value is an observation
 		for header, myval := range headers {
+			// Ignore
+			if goscar.IsMember(header, toIgnore) {
+				break
+			}
 			// Function call to get the type of header -> number or string
-			headerStat := goscar.GetStats(header, RecordCount, _csvMapValid)
+			headerStat := goscar.GetStats(header, oscutil.RecordCount, _csvMapValid)
+
+			// Add the form field identifier
+			_identifier := []fhir.Identifier{} // Clear
 			identifier := fhir.Identifier{}
-			identifier.System = &mySystem
-			identifier.Value = &header
-			_identifier := []fhir.Identifier{}
+			toAdd1 := header
+			identifier.System = &mySystemEntry
+			identifier.Value = &toAdd1
 			_identifier = append(_identifier, identifier)
+
+			// Add the timestamp identifier
+			identifier = fhir.Identifier{}
+			toAdd2 := record["dateCreated"]
+			identifier.System = &mySystemTimestamp
+			identifier.Value = &toAdd2
+			_identifier = append(_identifier, identifier)
+
+			// Add the form field identifier
+			identifier = fhir.Identifier{}
+			toAdd3 := location
+			identifier.System = &mySystemClinic
+			identifier.Value = &toAdd3
+			_identifier = append(_identifier, identifier)
+
 			observation.Identifier = _identifier
+
 			// Create a unique ID for observation to be added to key to generate the final ID
-			observationId := location + mySeparator +
+			var observationId string
+			observationId = location + mySeparator +
 				record["efmfid"] + mySeparator +
 				record["fdid"] + mySeparator +
 				record["dateCreated"] + mySeparator + header
@@ -141,17 +171,19 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 			observation.Subject = reference
 			observation.ResourceType = "Observation"
 			observation.Status = fhir.ObservationStatus(fhir.ObservationStatusRegistered) // Required
-			codableText := record["dateCreated"]
-			codableConcept.Text = &codableText
+			codableConcept.Id = &myVocabulary
+			codableConcept.Text = &header
 			observation.Code = codableConcept
-			// @TODO To switch after debug
+
 			// Unique ID
 			id := uuid.New()
-			myUuid := myUrn + id.String()
-			myPatientEntry := myUuid + "_patient"
-			myObservationEntry := myUuid + "_observation"
-			// Patient
-			if _, added := Find(patients, patientId); added != true {			
+			var myUuid, myPatientEntry, myObservationEntry string
+			myUuid = myUrn + id.String()
+			myPatientEntry = myUuid + "_patient"
+			myObservationEntry = myUuid + "_observation"
+
+			// Add patient if not added already
+			if !goscar.IsMember(patientId, patients) {
 				bundleEntry.Resource, _ = patient.MarshalJSON()
 				bundleEntry.FullUrl = &myPatientEntry
 				bundle.Entry = append(bundle.Entry, bundleEntry)
@@ -169,15 +201,4 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 	}
 
 	return bundle
-}
-
-// Find takes a slice and looks for an element in it. If found it will
-// return it's key, otherwise it will return -1 and a bool of false.
-func Find(slice []string, val string) (int, bool) {
-    for i, item := range slice {
-        if item == val {
-            return i, true
-        }
-    }
-    return -1, false
 }

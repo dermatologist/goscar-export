@@ -6,7 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/E-Health/goscar"
-	"github.com/E-Health/goscar-export/internal/oscutil"
+	oscutil2 "github.com/E-Health/goscar-export/src/oscutil"
 	"github.com/joho/godotenv"
 	"io/ioutil"
 	"log"
@@ -39,7 +39,7 @@ fhirpost -file=output.csv
 			os.Exit(1)
 		}
 		csvMap := goscar.CSVToMap(r)
-		b, err := json.Marshal(oscutil.MapToFHIR(csvMap))
+		b, err := json.Marshal(oscutil2.MapToFHIR(csvMap))
 		if err != nil {
 			fmt.Println(err)
 			return
