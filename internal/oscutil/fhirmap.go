@@ -28,7 +28,7 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 	var composition = fhir.Composition{}
 	var patient = fhir.Patient{}
 	var observation = FhirObservation{} // Extended observation: See above for definition
-	var identifier = fhir.Identifier{}
+	var i1 = fhir.Identifier{}
 	var bundle = fhir.Bundle{}
 	var reference = fhir.Reference{}
 	var bundleEntry = fhir.BundleEntry{}
@@ -49,9 +49,9 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 
 	// Single bundle
 	myTitle := location + mySeparator + username
-	identifier.System = &mySystem
-	identifier.Value = &myTitle
-	bundle.Identifier = &identifier
+	i1.System = &mySystem
+	i1.Value = &myTitle
+	bundle.Identifier = &i1
 	bundle.Type = bundleType // The bundle is a document. The first resource is a Composition.
 	//bundleEntry.Id = &mySystem
 	bundleTimestamp := dt.UTC().Format("2006-01-02T15:04:05Z")
@@ -64,7 +64,7 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 	practitioner.Id = &practitionerId
 
 	// Single composition
-	composition.Identifier = &identifier
+	composition.Identifier = &i1
 	composition.Status = fhir.CompositionStatus(fhir.CompositionStatusFinal) // Required
 	
 	// Random UUID for composition
@@ -100,8 +100,9 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 		// Each record has a patient (ID is unique for location)
 		patientId := location + mySeparator + record["demographicNo"]
 		refPatientId := "Patient/" + patientId
+		identifier := fhir.Identifier{}
 		identifier.System = &mySystem
-		identifier.Value = &myTitle
+		identifier.Value = &patientId
 		_identifier := []fhir.Identifier{}
 		_identifier = append(_identifier, identifier)
 		patient.Identifier = _identifier
@@ -111,6 +112,7 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 		for header, myval := range headers {
 			// Function call to get the type of header -> number or string
 			headerStat := goscar.GetStats(header, RecordCount, _csvMapValid)
+			identifier := fhir.Identifier{}
 			identifier.System = &mySystem
 			identifier.Value = &header
 			_identifier := []fhir.Identifier{}
@@ -139,7 +141,7 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 			observation.Subject = reference
 			observation.ResourceType = "Observation"
 			observation.Status = fhir.ObservationStatus(fhir.ObservationStatusRegistered) // Required
-			codableText := myUrn + myval
+			codableText := record["dateCreated"]
 			codableConcept.Text = &codableText
 			observation.Code = codableConcept
 			// @TODO To switch after debug
