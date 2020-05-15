@@ -116,10 +116,15 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 
 		// Each value is an observation
 		for header, myval := range headers {
+			// Ignore
+			if goscar.IsMember(header, toIgnore) {
+				break
+			}
 			// Function call to get the type of header -> number or string
 			headerStat := goscar.GetStats(header, oscutil.RecordCount, _csvMapValid)
 
 			// Add the form field identifier
+			_identifier := []fhir.Identifier{} // Clear
 			identifier := fhir.Identifier{}
 			toAdd1 := header
 			identifier.System = &mySystemEntry
