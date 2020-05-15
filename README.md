@@ -31,7 +31,7 @@ Each record should have:
 
  **(The Eform export csv of OSCAR typically has all these fields and requires no further processing)**
 
-How to use:
+## How to use:
 
 Change the settings in .env. You can compile this for Windows, Mac or Linux. Check the fhirmap.go file and make any desired changes. You should be able to figure out the mapping rules from this file. It reads data.csv file from the same folder. *(Will add commandline options soon)*
 
