@@ -60,7 +60,6 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 	i1.Value = &myTitle
 	bundle.Identifier = &i1
 	bundle.Type = bundleType // The bundle is a document. The first resource is a Composition.
-	//bundleEntry.Id = &mySystem
 	bundleTimestamp := dt.UTC().Format("2006-01-02T15:04:05Z")
 	bundle.Timestamp = &bundleTimestamp
 
@@ -104,7 +103,8 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 	for _, record := range _csvMapValid {
 
 		// Each record has a patient (ID is unique for location)
-		patientId := location + mySeparator + record["demographicNo"]
+		var patientId string
+		patientId = location + mySeparator + record["demographicNo"]
 		refPatientId := "Patient/" + patientId
 		identifier := fhir.Identifier{}
 		identifier.System = &mySystem
@@ -148,7 +148,8 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 			observation.Identifier = _identifier
 
 			// Create a unique ID for observation to be added to key to generate the final ID
-			observationId := location + mySeparator +
+			var observationId string
+			observationId = location + mySeparator +
 				record["efmfid"] + mySeparator +
 				record["fdid"] + mySeparator +
 				record["dateCreated"] + mySeparator + header
@@ -173,12 +174,14 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 			codableConcept.Id = &myVocabulary
 			codableConcept.Text = &header
 			observation.Code = codableConcept
-			// @TODO To switch after debug
+
 			// Unique ID
 			id := uuid.New()
-			myUuid := myUrn + id.String()
-			myPatientEntry := myUuid + "_patient"
-			myObservationEntry := myUuid + "_observation"
+			var myUuid, myPatientEntry, myObservationEntry string
+			myUuid = myUrn + id.String()
+			myPatientEntry = myUuid + "_patient"
+			myObservationEntry = myUuid + "_observation"
+
 			// Add patient if not added already
 			if !goscar.IsMember(patientId, patients) {
 				bundleEntry.Resource, _ = patient.MarshalJSON()
