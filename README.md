@@ -38,6 +38,7 @@ Each record should have:
 * Unique fullUrls are generated.
 * PatientID is location + demographicNo
 * Budle of 1 composition, 1 practitioner, 1 or more patients, and many observations
+* Validates with R4 schema
 
 ## How to use:
 
