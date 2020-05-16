@@ -1,9 +1,10 @@
-# goscar-export : OSCAR EForm Export (csv) to FHIR
+# goscar-export : OSCAR EMR EForm Export (csv) to FHIR
 
 
 ## About
 
-This is a simple application to convert a CSV file to a FHIR bundle and post it to a FHIR server in Golang. The OSCAR EMR has an EForm export tool that exports EForms to a CSV file that can be downloaded. This tool can load that CSV file to a FHIR server for consolidated analysis. 
+This is a simple application to convert a CSV file to a FHIR bundle and post it to a FHIR server in Golang. The OSCAR EMR has an EForm export tool that exports EForms to a CSV file that can be downloaded. This tool can load that CSV file to a FHIR server for consolidated analysis.
+**This tool can be used with any CSV, if columns specified below (CSV format section) are present.** 
 
 ## Use Cases
 
@@ -42,10 +43,11 @@ Each record should have:
 
 ## How to use:
 
-* Change the settings in .env. 
+* Change the settings in .env 
 * You can compile this for Windows, Mac or Linux. Check the fhirmap.go file and make any desired changes. You should be able to figure out the mapping rules from this file. 
-* It reads data.csv file from the same folder by default. *(Will add commandline options soon)*
+* It reads data.csv file from the same folder by default. *(can be specified by the -file commandline argument: fhirpost -file=data.csv)*
 * Start mongodb and run server and fhirpost in separate windows for testing.
+* On windows, you can just double-click executables to run. (Closes automatically after run)
 
 ## Privacy and security:
 
@@ -54,4 +56,5 @@ This application does not encrypt the data. Use it only in a secure network.
 ## Disclaimer:
 
 This is an experimental application. Use it at your own risk.
+Pull requests welcome. Refer to CONTRIBUTING.md
 
