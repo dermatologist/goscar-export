@@ -17,7 +17,8 @@ func main() {
 	// flag.Parse()
 
 	// If using meteor, then meteor port + 1
-	mongoHost := "mongodb://127.0.0.1:8086/fhir"
+	// 	mongoHost := "mongodb://127.0.0.1:8086/fhir"
+	mongoHost := "mongodb://127.0.0.1:27017/fhir"
 	s := server.NewServer(mongoHost)
 
 	config := server.DefaultConfig
