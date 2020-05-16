@@ -41,7 +41,10 @@ Each record should have:
 
 ## How to use:
 
-Change the settings in .env. You can compile this for Windows, Mac or Linux. Check the fhirmap.go file and make any desired changes. You should be able to figure out the mapping rules from this file. It reads data.csv file from the same folder. *(Will add commandline options soon)*
+* Change the settings in .env. 
+* You can compile this for Windows, Mac or Linux. Check the fhirmap.go file and make any desired changes. You should be able to figure out the mapping rules from this file. 
+* It reads data.csv file from the same folder by default. *(Will add commandline options soon)*
+* Start mongodb and run server and fhirpost in separate windows for testing.
 
 ## Privacy and security:
 
