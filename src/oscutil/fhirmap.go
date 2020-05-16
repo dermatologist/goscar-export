@@ -6,7 +6,6 @@ import (
 	"github.com/E-Health/goscar-export/internal/oscutil"
 	"github.com/google/uuid"
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
-	"os"
 	"regexp"
 	"strconv"
 	"time"
@@ -59,7 +58,7 @@ func DefaultSettings() Settings {
 }
 
 // MapToFHIR : maps the csvMap to a FHIR bundle.
-func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
+func MapToFHIR(_csvMapValid []map[string]string, settings Settings) fhir.Bundle {
 	var composition = fhir.Composition{}
 	var patient = fhir.Patient{}
 	var observation = FhirObservation{} // Extended observation: See above for definition
@@ -77,17 +76,17 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 	dt := time.Now()
 	patients := []string{}
 
-	location := os.Getenv("GOSCAR_LOCATION")
-	username := os.Getenv("USER_NAME")
-	mySeparator := os.Getenv("GOSCAR_ID_SEPARATOR")
-	myUrn := os.Getenv("GOSCAR_URN")
-	myForm := os.Getenv("GOSCAR_FORM_NAME")
-	myVocabulary := os.Getenv("GOSCAR_SYSTEM_VOCABULARY")
-
-	mySystem := os.Getenv("GOSCAR_SYSTEM")
-	mySystemEntry := os.Getenv("GOSCAR_SYSTEM_ENTRY")
-	mySystemTimestamp := os.Getenv("GOSCAR_SYSTEM_TIMESTAMP")
-	mySystemClinic := os.Getenv("GOSCAR_SYSTEM_CLINIC")
+	// Settings
+	location := settings.GOSCAR_LOCATION
+	username := settings.USER_NAME
+	mySeparator := settings.GOSCAR_ID_SEPARATOR
+	myUrn := settings.GOSCAR_URN
+	myForm := settings.GOSCAR_FORM_NAME
+	myVocabulary := settings.GOSCAR_SYSTEM_VOCABULARY
+	mySystem := settings.GOSCAR_SYSTEM
+	mySystemEntry := settings.GOSCAR_SYSTEM_ENTRY
+	mySystemTimestamp := settings.GOSCAR_SYSTEM_TIMESTAMP
+	mySystemClinic := settings.GOSCAR_SYSTEM_CLINIC
 
 	toIgnore := []string{"id", "fdid", "dateCreated", "eform_link", "StaffSig", "SubmitButton", "efmfid"}
 

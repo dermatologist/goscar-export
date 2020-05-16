@@ -29,6 +29,7 @@ fhirpost -file=output.csv
 
 	`
 
+	settings := oscutil2.DefaultSettings()
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -41,13 +42,12 @@ fhirpost -file=output.csv
 			os.Exit(1)
 		}
 		csvMap := goscar.CSVToMap(r)
-		b, err := json.Marshal(oscutil2.MapToFHIR(csvMap))
+		b, err := json.Marshal(oscutil2.MapToFHIR(csvMap, settings))
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
 		// fmt.Println(string(b))
-		settings := oscutil2.DefaultSettings()
 		postResource(string(b), settings)
 	} else {
 		fmt.Print(usage)
