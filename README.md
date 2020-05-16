@@ -15,7 +15,7 @@ First *go get* all dependencies
 This package includes three tools (*Go build* them separately from the cmd folder):
 
 * Fhirpost: The application for posting the csv fie to the FHIR server
-* Serverfhir: A simple FHIR server for testing. We recommend using PHS DW for production.
+* Serverfhir: A simple FHIR server for testing (requires mongodb). We recommend using [PHIS-DW](https://github.com/E-Health/fhir-server-phis-dw) for production.
 * Report: A simple application for descriptive statistics on the csv file
 
 ## Format of the CSV file
@@ -30,6 +30,14 @@ Each record should have:
 * *fdid* → The ID of the each form field.
 
  **(The Eform export csv of OSCAR typically has all these fields and requires no further processing)**
+
+## Mapping
+* Bundle with unique patients. All columns mapped to observations.
+* Submitter mapped to Practitioner.
+* Document type *bundle* with *composition* as the first entry
+* Unique fullUrls are generated.
+* PatientID is location + demographicNo
+* Budle of 1 composition, 1 practitioner, 1 or more patients, and many observations
 
 ## How to use:
 
