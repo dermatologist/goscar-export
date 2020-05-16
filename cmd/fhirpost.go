@@ -61,9 +61,9 @@ func main() {
 
 	usage := `
 
-Usage:
+		Usage:
 
-fhirpost -file=output.csv
+			fhirpost -file=data.csv
 
 	`
 
@@ -76,6 +76,7 @@ fhirpost -file=output.csv
 			fmt.Print(usage)
 			os.Exit(1)
 		}
+		settings.GOSCAR_INPUT_FILE = *filePtr
 		csvMap := goscar.CSVToMap(r)
 		b, err := json.Marshal(oscutil.MapToFHIR(csvMap, settings))
 		if err != nil {
@@ -94,9 +95,9 @@ fhirpost -file=output.csv
 // postResource : Posts FHIR resource to the API
 func postResource(jsonStr string, settings oscutil.Settings) {
 	url := settings.FHIR_SERVER
-	//fmt.Println("URL:>", settings.FHIR_SERVER)
-	//fmt.Print("FHIR:> ", jsonStr)
-	err := ioutil.WriteFile("data.json", []byte(jsonStr), 0644)
+	if settings.GOSCAR_OUTPUT_FILE != "" {
+		_ = ioutil.WriteFile("data.json", []byte(jsonStr), 0644)
+	}
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer([]byte(jsonStr)))
 	if err != nil {
 		panic(err)
