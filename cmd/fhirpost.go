@@ -12,6 +12,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path"
+	"text/template"
 )
 
 func main() {
@@ -45,7 +47,8 @@ fhirpost -file=output.csv
 			return
 		}
 		// fmt.Println(string(b))
-		postResource(string(b))
+		settings := oscutil2.DefaultSettings()
+		postResource(string(b), settings)
 	} else {
 		fmt.Print(usage)
 		os.Exit(1)
@@ -54,13 +57,11 @@ fhirpost -file=output.csv
 }
 
 // postResource : Posts FHIR resource to the API
-func postResource(jsonStr string) {
-	url := os.Getenv("FHIR_SERVER")
-
-	fmt.Println("URL:>", url)
-	fmt.Print("FHIR:> ", jsonStr)
+func postResource(jsonStr string, settings oscutil2.Settings) {
+	url := settings.FHIR_SERVER
+	//fmt.Println("URL:>", settings.FHIR_SERVER)
+	//fmt.Print("FHIR:> ", jsonStr)
 	err := ioutil.WriteFile("data.json", []byte(jsonStr), 0644)
-	// var jsonStr = []byte(`{"title":"Buy cheese and bread for breakfast."}`)
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer([]byte(jsonStr)))
 	if err != nil {
 		panic(err)
@@ -75,7 +76,19 @@ func postResource(jsonStr string) {
 	}
 	defer resp.Body.Close()
 
+	// Files are provided as a slice of strings.
+	paths := []string{
+		"./template/post.tmpl",
+	}
+	name := path.Base(paths[0])
+	t := template.Must(template.New(name).ParseFiles(paths...))
+	err = t.Execute(os.Stdout, settings)
+	if err != nil {
+		panic(err)
+	}
+
 	fmt.Println("response Status:", resp.Status)
+
 	//fmt.Println("response Headers:", resp.Header)
 	//body, _ := ioutil.ReadAll(resp.Body)
 	//fmt.Println("response Body:", string(body))

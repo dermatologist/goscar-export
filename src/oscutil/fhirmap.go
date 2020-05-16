@@ -24,6 +24,40 @@ type FhirObservation struct {
 	Code         fhir.CodeableConcept   `json:"code"`
 }
 
+type Settings struct {
+	GOSCAR_LOCATION          string `json:"location,omitempty"`
+	USER_NAME                string `json:"username,omitempty"`
+	GOSCAR_INPUT_FILE        string `json:"input_file,omitempty"`
+	GOSCAR_OUTPUT_FILE       string `json:"output_file,omitempty"`
+	GOSCAR_SYSTEM            string `json:"system,omitempty"`
+	FHIR_SERVER              string `json:"server,omitempty"`
+	GOSCAR_ID_SEPARATOR      string `json:"separator,omitempty"`
+	GOSCAR_URN               string `json:"urn,omitempty"`
+	GOSCAR_FORM_NAME         string `json:"form,omitempty"`
+	GOSCAR_SYSTEM_ENTRY      string `json:"system_entry,omitempty"`
+	GOSCAR_SYSTEM_TIMESTAMP  string `json:"system_timestamp,omitempty"`
+	GOSCAR_SYSTEM_CLINIC     string `json:"clinic,omitempty"`
+	GOSCAR_SYSTEM_VOCABULARY string `json:"vocabulary,omitempty"`
+}
+
+func DefaultSettings() Settings {
+	s := Settings{}
+	s.GOSCAR_LOCATION = "MyClinic"
+	s.USER_NAME = "MyName"
+	s.GOSCAR_INPUT_FILE = "data.csv"
+	s.GOSCAR_OUTPUT_FILE = "data.json"
+	s.GOSCAR_SYSTEM = "http://canehealth.com/goscar"
+	s.FHIR_SERVER = "http://localhost:3001"
+	s.GOSCAR_ID_SEPARATOR = "-"
+	s.GOSCAR_URN = "urn:uuid:"
+	s.GOSCAR_FORM_NAME = "MyForm"
+	s.GOSCAR_SYSTEM_ENTRY = "http://canehealth.com/goscar/entry"
+	s.GOSCAR_SYSTEM_TIMESTAMP = "http://canehealth.com/goscar/timestamp"
+	s.GOSCAR_SYSTEM_CLINIC = "http://canehealth.com/goscar/clinic"
+	s.GOSCAR_SYSTEM_VOCABULARY = "SNOMED-CT"
+	return s
+}
+
 // MapToFHIR : maps the csvMap to a FHIR bundle.
 func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 	var composition = fhir.Composition{}
@@ -38,7 +72,7 @@ func MapToFHIR(_csvMapValid []map[string]string) fhir.Bundle {
 	var practitioner = fhir.Practitioner{}
 	var bundleEntryRequest = fhir.BundleEntryRequest{}
 	bundleEntryRequest.Method = fhir.HTTPVerbPOST
-	bundleEntry.Request = &bundleEntryRequest;
+	bundleEntry.Request = &bundleEntryRequest
 	id := uuid.New()
 	dt := time.Now()
 	patients := []string{}
