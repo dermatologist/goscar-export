@@ -58,3 +58,5 @@ This application does not encrypt the data. Use it only in a secure network.
 This is an experimental application. Use it at your own risk.
 Pull requests welcome. Refer to CONTRIBUTING.md
 
+## Contributors
+* [Bell Eapen](http://nuchange.ca)
