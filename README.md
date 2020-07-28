@@ -49,6 +49,8 @@ Each record should have:
 * Start mongodb and run server and fhirpost in separate windows for testing.
 * On windows, you can just double-click executables to run. (Closes automatically after run)
 
+## [Import](https://e-health.github.io/goscar-export/pkg/github.com/E-Health/goscar-export/oscutil/index.html)
+
 ## Privacy and security:
 
 This application does not encrypt the data. Use it only in a secure network. 
