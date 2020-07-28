@@ -19,3 +19,16 @@ NO_HMR=1 meteor run --port 8085
 * show collections
 * show tables
 
+## 
+
+```
+https_proxy='socks5://127.0.0.1:9090' go run cmd/fhirpost.go 
+https_proxy='socks5://127.0.0.1:9090' go get github.com/stamblerre/gocode
+https_proxy='socks5://127.0.0.1:9090' go mod tidy
+
+```
+
+## "but does not contain package"
+
+* Files have been deleted during purge
+* remove github folder in GOROOT and go mod tidy again
