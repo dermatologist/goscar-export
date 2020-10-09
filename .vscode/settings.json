@@ -1,4 +1,8 @@
 {
+    "licenser.license": "MIT",
+    "licenser.author": "Bell Eapen",
+    "licenser.projectName": "GOSCAR Export",
+    "licenser.useSingleLineStyle": false,
     "go.autocompleteUnimportedPackages": true,
     "editor.formatOnSave": true
 }

@@ -1,14 +1,31 @@
+/**
+ * Copyright 2020 Bell Eapen
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package oscutil
 
 import (
 	"encoding/json"
+	"regexp"
+	"strconv"
+	"time"
+
 	"github.com/E-Health/goscar"
 	"github.com/E-Health/goscar-export/internal/oscutil"
 	"github.com/google/uuid"
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
-	"regexp"
-	"strconv"
-	"time"
 )
 
 // FhirObservation : Extended Observation as the existing one does not have valueString and valueInteger

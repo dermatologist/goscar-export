@@ -5,15 +5,16 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/E-Health/goscar"
-	"github.com/E-Health/goscar-export/oscutil"
-	"github.com/joho/godotenv"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"path"
 	"text/template"
+
+	"github.com/E-Health/goscar"
+	"github.com/E-Health/goscar-export/oscutil"
+	"github.com/joho/godotenv"
 )
 
 type Config struct {
