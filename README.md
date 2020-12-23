@@ -1,5 +1,6 @@
 # goscar-export : OSCAR EMR EForm Export (csv) to FHIR
 
+[![forthebadge](https://forthebadge.com/images/badges/built-with-love.svg) **for OSCAR EMR** ](https://oscar-emr.com/)
 
 ## About
 
@@ -61,4 +62,5 @@ This is an experimental application. Use it at your own risk.
 Pull requests welcome. Refer to CONTRIBUTING.md
 
 ## Contributors
-* [Bell Eapen](http://nuchange.ca)
+* [Bell Eapen](http://nuchange.ca) | [![Twitter Follow](https://img.shields.io/twitter/follow/beapen?style=social)](https://twitter.com/beapen)
+
