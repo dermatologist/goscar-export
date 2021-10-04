@@ -10,7 +10,7 @@ require (
 	github.com/corpix/uarand v0.1.1 // indirect
 	github.com/gin-gonic/contrib v0.0.0-20191209060500-d6e26eeaa607 // indirect
 	github.com/gin-gonic/gin v1.6.3 // indirect
-	github.com/google/uuid v1.1.1
+	github.com/google/uuid v1.3.0
 	github.com/gorilla/sessions v1.2.0 // indirect
 	github.com/icrowley/fake v0.0.0-20180203215853-4178557ae428 // indirect
 	github.com/intervention-engine/fhir v0.0.0-20180827153403-cd152e6130c6
