@@ -15,7 +15,7 @@ require (
 	github.com/icrowley/fake v0.0.0-20180203215853-4178557ae428 // indirect
 	github.com/intervention-engine/fhir v0.0.0-20180827153403-cd152e6130c6
 	github.com/itsjamie/gin-cors v0.0.0-20160420130702-97b4a9da7933 // indirect
-	github.com/joho/godotenv v1.3.0
+	github.com/joho/godotenv v1.4.0
 	github.com/jroimartin/gocui v0.4.0
 	github.com/juju/errors v0.0.0-20200330140219-3fe23663418f // indirect
 	github.com/juju/testing v0.0.0-20200510222523-6c8c298c77a0 // indirect
