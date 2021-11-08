@@ -24,7 +24,7 @@ require (
 	github.com/mitre/heart v0.0.0-20160825192324-0c46b433a490 // indirect
 	github.com/nsf/termbox-go v0.0.0-20200418040025-38ba6e5628f1 // indirect
 	github.com/pebbe/util v0.0.0-20140716220158-e0e04dfe647c // indirect
-	github.com/samply/golang-fhir-models/fhir-models v0.1.0
+	github.com/samply/golang-fhir-models/fhir-models v0.2.1
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // indirect
 	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22 // indirect
 	gopkg.in/square/go-jose.v1 v1.1.2 // indirect
